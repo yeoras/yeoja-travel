@@ -30,7 +30,6 @@
         .input-base { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #EEE; background-color: #FAFAFA; font-size: 14px; outline: none; transition: all 0.2s; }
         .input-base:focus { border-color: #FB923C; background-color: #FFF; }
         .icon-wrapper { display: inline-flex; align-items: center; justify-content: center; }
-        .rank-bar { transition: width 1s ease-out; }
         select.input-base { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em; }
     </style>
 </head>
@@ -108,117 +107,78 @@
             6: { flight: 40000, hostel: 25000, airbnb: 80000, hotel: 150000, food: 15000, coffee: 4500 } 
         };
 
+        // 🆕 [초강력 데이터 탑재] 실제 핫플 이름으로 꽉 채웠습니다!
         const CITY_SPECIFIC_DATA = {
             'busan': {
-                hotels: [
-                    { name: '시그니엘 부산', type: 'hotel', priceLevel: 'high' },
-                    { name: '파라다이스 호텔 부산', type: 'hotel', priceLevel: 'high' },
-                    { name: '광안리 켄트호텔', type: 'hotel', priceLevel: 'mid' },
-                    { name: '해운대 게스트하우스', type: 'hostel', priceLevel: 'low' }
-                ],
-                cafes: ['웨이브온 커피', '카페 레이어드 신세계센텀', '블랙업커피', '신기산업'],
-                spots: ['해운대 블루라인파크', '흰여울문화마을', '감천문화마을', '광안대교']
+                hotels: [ { name: '시그니엘 부산', type: 'hotel', priceLevel: 'high' }, { name: '파라다이스 호텔 부산', type: 'hotel', priceLevel: 'high' }, { name: '광안리 켄트호텔', type: 'hotel', priceLevel: 'mid' }, { name: '해운대 게스트하우스', type: 'hostel', priceLevel: 'low' } ],
+                cafes: ['웨이브온 커피', '카페 레이어드', '블랙업커피', '신기산업'],
+                spots: ['해운대 블루라인파크', '흰여울문화마을', '감천문화마을', '광안대교'],
+                restaurants: ['해성막창집', '개미집', '초량밀면', '이재모피자'],
+                bars: ['HQ 광안', '퍼지네이블', '고릴라 브루잉', '빌라 드 샬롯']
             },
             'jeju': {
-                hotels: [
-                    { name: '제주 신라호텔', type: 'hotel', priceLevel: 'high' },
-                    { name: '그랜드 조선 제주', type: 'hotel', priceLevel: 'high' },
-                    { name: '랜딩관 제주신화월드', type: 'hotel', priceLevel: 'mid' },
-                    { name: '제주 또랑 게스트하우스', type: 'hostel', priceLevel: 'low' }
-                ],
+                hotels: [ { name: '제주 신라호텔', type: 'hotel', priceLevel: 'high' }, { name: '그랜드 조선 제주', type: 'hotel', priceLevel: 'high' }, { name: '랜딩관 제주신화월드', type: 'hotel', priceLevel: 'mid' }, { name: '제주 또랑 게스트하우스', type: 'hostel', priceLevel: 'low' } ],
                 cafes: ['원앤온리', '우무', '카페 노티드 제주', '테라로사 서귀포'],
-                spots: ['성산일출봉', '우도', '함덕해수욕장', '아르떼뮤지엄']
+                spots: ['성산일출봉', '우도', '함덕해수욕장', '아르떼뮤지엄'],
+                restaurants: ['숙성도', '우진해장국', '자매국수', '오는정김밥'],
+                bars: ['싱싱잇', '더 클리프', '맥파이 블루버드', '아일랜드 프로젝트']
             },
             'seoul': {
-                hotels: [
-                    { name: '서울 신라호텔', type: 'hotel', priceLevel: 'high' },
-                    { name: '포시즌스 호텔 서울', type: 'hotel', priceLevel: 'high' },
-                    { name: 'L7 홍대', type: 'hotel', priceLevel: 'mid' },
-                    { name: '서울 큐브 이태원', type: 'hostel', priceLevel: 'low' }
-                ],
+                hotels: [ { name: '서울 신라호텔', type: 'hotel', priceLevel: 'high' }, { name: '포시즌스 호텔 서울', type: 'hotel', priceLevel: 'high' }, { name: 'L7 홍대', type: 'hotel', priceLevel: 'mid' }, { name: '서울 큐브 이태원', type: 'hostel', priceLevel: 'low' } ],
                 cafes: ['어니언 안국', '블루보틀 성수', '런던베이글뮤지엄', '스타벅스 경동1960'],
-                spots: ['경복궁', 'N서울타워', '더현대 서울', '익선동 한옥거리']
+                spots: ['경복궁', 'N서울타워', '더현대 서울', '익선동 한옥거리'],
+                restaurants: ['명동교자', '우래옥', '금돼지식당', '몽탄'],
+                bars: ['찰스 H', '바 참', '제스트', '더 그리핀']
             },
-             'osaka': {
-                hotels: [
-                    { name: '콘래드 오사카', type: 'hotel', priceLevel: 'high' },
-                    { name: '호텔 한큐 레스파이어', type: 'hotel', priceLevel: 'mid' },
-                    { name: '도미인 프리미엄 난바', type: 'hotel', priceLevel: 'mid' },
-                    { name: '호스텔 와사비 오사카', type: 'hostel', priceLevel: 'low' }
-                ],
+            'osaka': {
+                hotels: [ { name: '콘래드 오사카', type: 'hotel', priceLevel: 'high' }, { name: '호텔 한큐 레스파이어', type: 'hotel', priceLevel: 'mid' }, { name: '도미인 프리미엄 난바', type: 'hotel', priceLevel: 'mid' }, { name: '호스텔 와사비 오사카', type: 'hostel', priceLevel: 'low' } ],
                 cafes: ['모토커피', '시아와세노 팬케이크', '하브스 난바', '스트리머 커피'],
-                spots: ['유니버설 스튜디오 재팬', '도톤보리', '오사카성', '우메다 스카이빌딩']
+                spots: ['유니버설 스튜디오 재팬', '도톤보리', '오사카성', '우메다 스카이빌딩'],
+                restaurants: ['이치란 라멘', '쿠시카츠 다루마', '치보 오코노미야키', '모토무라 규카츠'],
+                bars: ['Bar Nayuta', 'Bible Club Osaka', 'PC and Retro Bar Space Station', 'Moonshine']
             },
             'tokyo': {
-                hotels: [
-                    { name: '아만 도쿄', type: 'hotel', priceLevel: 'high' },
-                    { name: '신주쿠 프린스 호텔', type: 'hotel', priceLevel: 'mid' },
-                    { name: '호텔 그레이서리 신주쿠', type: 'hotel', priceLevel: 'mid' },
-                    { name: '누이 호스텔 & 바 라운지', type: 'hostel', priceLevel: 'low' }
-                ],
+                hotels: [ { name: '아만 도쿄', type: 'hotel', priceLevel: 'high' }, { name: '신주쿠 프린스 호텔', type: 'hotel', priceLevel: 'mid' }, { name: '호텔 그레이서리 신주쿠', type: 'hotel', priceLevel: 'mid' }, { name: '누이 호스텔 & 바 라운지', type: 'hostel', priceLevel: 'low' } ],
                 cafes: ['블루보틀 아오야마', '푸글렌 도쿄', '카페 키츠네', '오니버스 커피'],
-                spots: ['시부야 스카이', '팀랩 플래닛', '센소지', '도쿄 디즈니씨']
+                spots: ['시부야 스카이', '팀랩 플래닛', '센소지', '도쿄 디즈니씨'],
+                restaurants: ['이치란 시부야', '규카츠 모토무라', '츠지한', '우동 신'],
+                bars: ['Ben Fiddich', 'Bar High Five', 'SG Club', 'Golden Gai']
             },
             'bangkok': {
-                hotels: [
-                    { name: '만다린 오리엔탈 방콕', type: 'hotel', priceLevel: 'high' },
-                    { name: '킴튼 말라이 방콕', type: 'hotel', priceLevel: 'high' },
-                    { name: '이스틴 그랜드 사톤', type: 'hotel', priceLevel: 'mid' },
-                    { name: '러브디 방콕 시암', type: 'hostel', priceLevel: 'low' }
-                ],
+                hotels: [ { name: '만다린 오리엔탈 방콕', type: 'hotel', priceLevel: 'high' }, { name: '킴튼 말라이 방콕', type: 'hotel', priceLevel: 'high' }, { name: '이스틴 그랜드 사톤', type: 'hotel', priceLevel: 'mid' }, { name: '러브디 방콕 시암', type: 'hostel', priceLevel: 'low' } ],
                 cafes: ['팩토리 커피', '티추카 루프탑 바', '애프터 유', '로스트'],
-                spots: ['왓 아룬', '아이콘시암', '조드페어 야시장', '룸피니 공원']
+                spots: ['왓 아룬', '아이콘시암', '조드페어 야시장', '룸피니 공원'],
+                restaurants: ['팁사마이', '쩨파이', '쏨분 씨푸드', '노스이스트'],
+                bars: ['Tichuca Rooftop Bar', 'Moon Bar', 'Siwilai City Club', 'The Bamboo Bar']
             },
             'chiangmai': {
-                hotels: [
-                    { name: '아난타라 치앙마이 리조트', type: 'hotel', priceLevel: 'high' },
-                    { name: '유 님만 치앙마이', type: 'hotel', priceLevel: 'mid' },
-                    { name: '더 인사이드 하우스', type: 'hotel', priceLevel: 'mid' },
-                    { name: '알렉사 호스텔', type: 'hostel', priceLevel: 'low' }
-                ],
-                cafes: ['Chom Cafe', 'Republic Coffee', 'LOT', 'No.39 Cafe', 'The Baristro'],
-                spots: ['타패 게이트', '플런 루디 야시장', '왓 프라탓 도이수텝', '반캉왓 예술마을']
+                hotels: [ { name: '아난타라 치앙마이 리조트', type: 'hotel', priceLevel: 'high' }, { name: '유 님만 치앙마이', type: 'hotel', priceLevel: 'mid' }, { name: '더 인사이드 하우스', type: 'hotel', priceLevel: 'mid' }, { name: '알렉사 호스텔', type: 'hostel', priceLevel: 'low' } ],
+                cafes: ['Chom Cafe and Restaurant', 'Republic Coffee', 'LOT', 'No.39 Cafe', 'The Baristro'],
+                spots: ['타패 게이트', '플런 루디 야시장', '왓 프라탓 도이수텝', '반캉왓 예술마을'],
+                restaurants: ['카오소이 매사이', '통템토', '진저 팜 키친', 'SP 치킨'],
+                bars: ['North Gate Jazz Co-Op', 'The Service 1921', 'Rise Rooftop Bar', 'Warmup Cafe']
             },
             'danang': {
-                hotels: [
-                    { name: '인터컨티넨탈 다낭', type: 'hotel', priceLevel: 'high' },
-                    { name: '나만 리트리트', type: 'hotel', priceLevel: 'high' },
-                    { name: '살라 다낭 비치 호텔', type: 'hotel', priceLevel: 'mid' },
-                    { name: '윙크 호텔 다낭', type: 'hotel', priceLevel: 'low' }
-                ],
+                hotels: [ { name: '인터컨티넨탈 다낭', type: 'hotel', priceLevel: 'high' }, { name: '나만 리트리트', type: 'hotel', priceLevel: 'high' }, { name: '살라 다낭 비치 호텔', type: 'hotel', priceLevel: 'mid' }, { name: '윙크 호텔 다낭', type: 'hotel', priceLevel: 'low' } ],
                 cafes: ['콩카페 1호점', '웃티크', '선짜 마리나', '원더러스트'],
-                spots: ['바나힐', '미케비치', '용다리', '호이안 올드타운']
+                spots: ['바나힐', '미케비치', '용다리', '호이안 올드타운'],
+                restaurants: ['마담란', '바두엉', '목식당', '티엔킴'],
+                bars: ['Sky36', 'Brilliant Top Bar', 'Sevva Sky Lounge', 'On The Radio']
             },
-            'fukuoka': {
-                hotels: [
-                    { name: '리츠칼튼 후쿠오카', type: 'hotel', priceLevel: 'high' },
-                    { name: '미야코 호텔 하카타', type: 'hotel', priceLevel: 'high' },
-                    { name: '도미인 프리미엄 하카타', type: 'hotel', priceLevel: 'mid' },
-                    { name: '더 밀레니얼스 후쿠오카', type: 'hostel', priceLevel: 'low' }
-                ],
+             'fukuoka': {
+                hotels: [ { name: '리츠칼튼 후쿠오카', type: 'hotel', priceLevel: 'high' }, { name: '미야코 호텔 하카타', type: 'hotel', priceLevel: 'high' }, { name: '도미인 프리미엄 하카타', type: 'hotel', priceLevel: 'mid' }, { name: '더 밀레니얼스 후쿠오카', type: 'hostel', priceLevel: 'low' } ],
                 cafes: ['FUK COFFEE', '아이보리쉬', '백금다방', '무츠카도'],
-                spots: ['모모치 해변', '후쿠오카 타워', '캐널시티 하카타', '다자이후 텐만구']
+                spots: ['모모치 해변', '후쿠오카 타워', '캐널시티 하카타', '다자이후 텐만구'],
+                restaurants: ['이치란 본점', '멘타이쥬', '키와미야 함바그', '모츠나베 오오야마'],
+                bars: ['Bar Oscar', 'Bar Kitchen', 'Citadel', 'Morris']
             },
             'paris': {
-                hotels: [
-                    { name: '리츠 파리', type: 'hotel', priceLevel: 'high' },
-                    { name: '풀만 파리 투르 에펠', type: 'hotel', priceLevel: 'high' },
-                    { name: '노보텔 레알', type: 'hotel', priceLevel: 'mid' },
-                    { name: '제너레이터 파리', type: 'hostel', priceLevel: 'low' }
-                ],
+                hotels: [ { name: '리츠 파리', type: 'hotel', priceLevel: 'high' }, { name: '풀만 파리 투르 에펠', type: 'hotel', priceLevel: 'high' }, { name: '노보텔 레알', type: 'hotel', priceLevel: 'mid' }, { name: '제너레이터 파리', type: 'hostel', priceLevel: 'low' } ],
                 cafes: ['카페 드 플로르', '안젤리나', '셰익스피어 앤 컴퍼니', '마레 지구 카페'],
-                spots: ['에펠탑', '루브르 박물관', '몽마르뜨 언덕', '베르사유 궁전']
+                spots: ['에펠탑', '루브르 박물관', '몽마르뜨 언덕', '베르사유 궁전'],
+                restaurants: ['Bouillon Chartier', 'Le Relais de l’Entrecôte', 'Pink Mamma', 'L’As du Fallafel'],
+                bars: ['Little Red Door', 'Le Syndicat', 'Harry\'s New York Bar', 'Candelaria']
             },
-             'new_york': {
-                hotels: [
-                    { name: '더 플라자 호텔', type: 'hotel', priceLevel: 'high' },
-                    { name: '1 호텔 브루클린 브릿지', type: 'hotel', priceLevel: 'high' },
-                    { name: '포드 타임스 스퀘어', type: 'hotel', priceLevel: 'mid' },
-                    { name: 'HI NYC 호스텔', type: 'hostel', priceLevel: 'low' }
-                ],
-                cafes: ['데보시온', '블루스톤 레인', '매그놀리아 베이커리', '랄프스 커피'],
-                spots: ['센트럴 파크', '타임스 스퀘어', '자유의 여신상', '탑 오브 더 락']
-            }
         };
 
         const RAW_CITIES = [
@@ -532,44 +492,34 @@
 
              // 🆕 [핵심] 도시 이름 매핑 및 추천 데이터 생성기
              const getCityRecommendations = (cityName, cityData) => {
-                 // 1. 도시 이름 정규화 및 키 찾기
                  const nameKeyMap = {
                      '부산': 'busan', '제주': 'jeju', '서울': 'seoul', '오사카': 'osaka', '도쿄': 'tokyo', '후쿠오카': 'fukuoka',
                      '방콕': 'bangkok', '다낭': 'danang', '치앙마이': 'chiangmai', '파리': 'paris', '뉴욕': 'new_york'
                  };
                  
-                 // "부산 (한국)" -> "부산" 추출
                  const pureCityName = cityName.split(' (')[0]; 
                  const cityKey = nameKeyMap[pureCityName];
-                 
                  let specificData = null;
                  
-                 // 2. 실제 데이터가 있으면 가져옴
                  if (cityKey && CITY_SPECIFIC_DATA[cityKey]) {
                      specificData = CITY_SPECIFIC_DATA[cityKey];
                  }
 
-                 // 3. 숙소 추천 리스트 생성 (예산에 따라 정렬)
                  let hotels = [];
                  
                  if (specificData) {
-                     // 실제 데이터가 있는 경우: 예산에 맞춰 정렬
                      if (budget >= 1500000) { 
-                         // 예산 넉넉 -> 고급 호텔 우선, 저렴한 곳은 뒤로
                          hotels = [...specificData.hotels].sort((a, b) => (a.priceLevel === 'high' ? -1 : 1));
                      } else { 
-                         // 예산 부족 -> 저렴한 숙소 우선, 비싼 곳은 뒤로
                          hotels = [...specificData.hotels].sort((a, b) => (a.priceLevel === 'low' ? -1 : 1));
                      }
                      
-                     // 가격 정보 매핑 (priceLevel -> 실제 가격)
                      hotels = hotels.map(h => ({
                          name: h.name,
                          price: h.priceLevel === 'high' ? cityData.hotel * 1.5 : h.priceLevel === 'mid' ? cityData.hotel : cityData.hostel
                      }));
 
                  } else {
-                     // 데이터가 없는 경우 (가상 데이터 생성) - 랜덤 다양성 추가
                      const name = cityName.split(' (')[0];
                      const randomAdjectives = ['그랜드', '센트럴', '로얄', '시티', '부티크', '가든', '뷰'];
                      const adj = randomAdjectives[Math.floor(Math.random() * randomAdjectives.length)];
@@ -588,17 +538,20 @@
                      }
                  }
 
-                 // 4. 카페/명소 데이터
-                 let cafes = [], spots = [];
+                 let cafes = [], spots = [], restaurants = [], bars = [];
                  if (specificData) {
                      cafes = specificData.cafes;
                      spots = specificData.spots;
+                     restaurants = specificData.restaurants || [`${pureCityName} 맛집`, '로컬 식당']; // 데이터 없을 경우 대비
+                     bars = specificData.bars || [`${pureCityName} 펍`, '루프탑 바'];
                  } else {
                       cafes = [`카페 ${pureCityName}`, `스타벅스 ${pureCityName}점`, `${pureCityName} 로스터리`];
                       spots = [`${pureCityName} 중앙 공원`, `${pureCityName} 야시장`, `${pureCityName} 올드타운`];
+                      restaurants = [`${pureCityName} 전통 식당`, '현지인 맛집'];
+                      bars = [`${pureCityName} 재즈바`, '시티 뷰 펍'];
                  }
 
-                 return { hotels, cafes, spots };
+                 return { hotels, cafes, spots, restaurants, bars };
              };
 
              // 🆕 맞춤 필터 검색 로직 - 진짜 장소 이름 생성 및 구글 맵 연결
@@ -608,45 +561,42 @@
                  const { category, vibe } = customFilters;
                  const cityName = selectedCity.name.split(' (')[0];
                  
-                 // 실제 데이터가 있는 도시인지 확인
-                 const nameKeyMap = {
-                     '부산': 'busan', '제주': 'jeju', '서울': 'seoul', '오사카': 'osaka', '도쿄': 'tokyo', '후쿠오카': 'fukuoka',
-                     '방콕': 'bangkok', '다낭': 'danang', '치앙마이': 'chiangmai', '파리': 'paris', '뉴욕': 'new_york'
-                 };
-                 const cityKey = nameKeyMap[cityName];
+                 // 실제 데이터 가져오기
+                 const recs = getCityRecommendations(selectedCity.name, selectedCity);
                  
+                 let targetList = [];
+                 if (category === 'restaurant') targetList = recs.restaurants;
+                 else if (category === 'bar') targetList = recs.bars;
+                 else if (category === 'cafe') targetList = recs.cafes;
+
                  let results = [];
-
-                 // 가짜 데이터 대신 그럴싸한 이름 생성 로직 (데이터 없을 때)
-                 const vibePrefix = { 'hip': ['Hidden', 'Hip', 'The'], 'quiet': ['Cozy', 'Silent', 'Secret'], 'view': ['Sky', 'Ocean', 'Sunset'], 'local': ['Old', 'Grandma', 'Local'] };
-                 const catSuffix = { 'restaurant': ['Bistro', 'Kitchen', 'House'], 'bar': ['Lounge', 'Pub', 'Bar'], 'cafe': ['Espresso', 'Roastery', 'Coffee'] };
                  
-                 // 1. 진짜 데이터가 있더라도 '취향' 검색은 너무 방대하므로, 
-                 // 구글 맵에서 정확히 검색되도록 '검색어' 자체를 최적화해서 보여줌
-                 // 사용자가 "아, 저걸 누르면 나오는구나" 하고 느끼게 함.
-                 
-                 const searchQueries = [
-                     `${cityName} ${vibe === 'hip' ? '힙한' : vibe === 'quiet' ? '조용한' : vibe === 'view' ? '뷰 좋은' : '현지인'} ${category === 'restaurant' ? '맛집' : category === 'bar' ? '술집' : '카페'} 추천`,
-                     `${cityName} famous ${vibe} ${category}`,
-                     `${cityName} best ${category} for ${vibe} vibes`
-                 ];
-
-                 // 2. 결과 리스트 생성 (클릭하면 구글 맵 검색으로 직행)
-                 results = [
-                     { name: `✨ ${cityName} ${vibe === 'hip' ? '요즘 뜨는' : vibe === 'quiet' ? '나만 알고 싶은' : vibe === 'view' ? '전망 좋은' : '로컬'} ${category === 'restaurant' ? '맛집' : category === 'bar' ? '술집' : '카페'} 모음`, query: searchQueries[0] },
-                     { name: `📍 구글 평점 4.5 이상 ${category === 'restaurant' ? '식당' : category === 'bar' ? '바' : '카페'}`, query: searchQueries[1] },
-                 ];
+                 if (targetList && targetList.length > 0) {
+                     // 실제 데이터가 있으면 그걸 보여줌 (랜덤으로 2~3개)
+                     const shuffled = [...targetList].sort(() => 0.5 - Math.random());
+                     results = shuffled.slice(0, 3).map(name => ({
+                         name: name, 
+                         query: `${cityName} ${name}` // 구글맵 검색어
+                     }));
+                 } else {
+                     // 데이터가 정말 없을 경우 (거의 없겠지만)
+                     const query = `${cityName} ${vibe === 'hip' ? '힙한' : vibe === 'quiet' ? '조용한' : vibe === 'view' ? '뷰 좋은' : '현지인'} ${category === 'restaurant' ? '맛집' : category === 'bar' ? '술집' : '카페'}`;
+                     results = [
+                         { name: `✨ ${cityName} ${vibe} ${category === 'restaurant' ? '맛집' : category === 'bar' ? '술집' : '카페'} 검색`, query: query }
+                     ];
+                 }
                  
                  setCustomResults(results);
              };
 
-             // 🆕 아고다 파트너 검색 링크 (직링크 개선)
+             // 🆕 아고다 파트너 검색 링크 (직링크 개선 - partnersearch.aspx 사용)
              const openHotelSearch = (hotelName, cityName) => {
                  const cid = "123456"; // 사장님 CID
-                 // 호텔 이름만 깔끔하게 추출 (불필요한 수식어 제거)
+                 // 호텔 이름만 깔끔하게 추출
                  const cleanHotelName = hotelName.replace(/그랜드|호텔|리조트/g, '').trim();
+                 // 검색어: 도시이름 + 호텔이름 (정확도 향상)
                  const query = `${cityName.split(' (')[0]} ${hotelName}`;
-                 // partnersearch.aspx 사용 (검색 결과 리스트로 이동 확률 높음)
+                 // partnersearch.aspx 엔드포인트 사용
                  const url = `https://www.agoda.com/partners/partnersearch.aspx?cid=${cid}&text=${encodeURIComponent(query)}`;
                  window.open(url, '_blank');
              };
@@ -655,11 +605,6 @@
                  // 검색어에 도시 이름을 붙여서 정확도 향상
                  const query = `${selectedCity.name.split(' (')[0]} ${placeName}`;
                  window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`, '_blank');
-             };
-             
-             // 🆕 구글 검색 연결 (맞춤 필터용 - 지도 탭으로 유도)
-             const openGoogleSearch = (query) => {
-                 window.open(`https://www.google.com/maps/search/${encodeURIComponent(query)}`, '_blank');
              };
 
              return (
@@ -674,7 +619,6 @@
                                     <button onClick={() => { setSelectedCity(null); setActiveTab('basic'); setCustomResults(null); }} className="text-gray-400 hover:text-gray-600"><X className="w-6 h-6" /></button>
                                 </div>
                                 
-                                {/* 🆕 탭 메뉴 추가 */}
                                 <div className="flex mb-4 border-b border-gray-200">
                                     <button 
                                         className={`flex-1 pb-2 text-sm font-bold ${activeTab === 'basic' ? 'text-orange-500 border-b-2 border-orange-500' : 'text-gray-400'}`}
@@ -757,7 +701,7 @@
                                         </div>
                                     </>
                                 ) : (
-                                    // 🆕 [내 맘대로 찾기] 탭 내용
+                                    // 🆕 [내 맘대로 찾기] - 실명 추천
                                     <div className="flex flex-col h-full">
                                         <div className="space-y-4 mb-6">
                                             <div>
@@ -789,23 +733,23 @@
                                                 </div>
                                             </div>
                                             <button onClick={handleCustomSearch} className="w-full bg-gray-800 text-white py-3 rounded-xl font-bold hover:bg-black transition shadow-md">
-                                                추천 장소 검색하기 🔎
+                                                추천 장소 찾기 🔎
                                             </button>
                                         </div>
                                         
-                                        {/* 검색 결과 */}
+                                        {/* 검색 결과 - 실명 가게 리스트 */}
                                         {customResults && (
                                             <div className="flex-1 overflow-y-auto border-t pt-4">
-                                                <p className="text-xs text-gray-400 mb-2">검색 결과 (클릭해서 자세히 보기)</p>
+                                                <p className="text-xs text-gray-400 mb-2">추천 장소 (클릭해서 지도 보기)</p>
                                                 <div className="space-y-2">
                                                     {customResults.map((res, idx) => (
                                                         <div 
                                                             key={idx} 
-                                                            onClick={() => openGoogleSearch(res.query)}
+                                                            onClick={() => openMap(res.name)}
                                                             className="bg-white border border-gray-100 p-3 rounded-xl shadow-sm hover:border-orange-200 cursor-pointer flex justify-between items-center group"
                                                         >
                                                             <span className="text-sm text-gray-700 group-hover:text-orange-500 font-medium">{res.name}</span>
-                                                            <Search className="w-4 h-4 text-gray-300 group-hover:text-orange-400" />
+                                                            <MapPin className="w-4 h-4 text-gray-300 group-hover:text-orange-400" />
                                                         </div>
                                                     ))}
                                                 </div>
@@ -845,7 +789,7 @@
             );
         }
 
-        // ... (나머지 컴포넌트들: MbtiAnalyzer, RealTimeSearch, ReviewBoard, AdModal, LoginModal, App 등은 기존과 동일하게 유지) ...
+        // ... (나머지 컴포넌트: MbtiAnalyzer, RealTimeSearch, ReviewBoard, AdModal, LoginModal, App 등은 기존과 동일하게 유지) ...
         function MbtiAnalyzer() {
             const [step, setStep] = useState(0); 
             const [answers, setAnswers] = useState({});
