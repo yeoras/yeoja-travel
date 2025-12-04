@@ -108,7 +108,68 @@
             6: { flight: 40000, hostel: 25000, airbnb: 80000, hotel: 150000, food: 15000, coffee: 4500 } 
         };
 
+        // 🆕 [진짜 데이터 탑재] 도시별 찐 핫플 데이터
         const CITY_SPECIFIC_DATA = {
+            'chiangmai': {
+                hotels: [
+                    { name: '아난타라 치앙마이 리조트', type: 'hotel', priceLevel: 'high' },
+                    { name: '유 님만 치앙마이', type: 'hotel', priceLevel: 'mid' },
+                    { name: '더 인사이드 하우스', type: 'hotel', priceLevel: 'mid' },
+                    { name: '알렉사 호스텔', type: 'hostel', priceLevel: 'low' }
+                ],
+                cafes: ['Chom Cafe and Restaurant', 'Republic Coffee', 'LOT', 'No.39 Cafe', 'The Baristro'],
+                spots: ['타패 게이트', '플런 루디 야시장', '왓 프라탓 도이수텝', '반캉왓 예술마을']
+            },
+            'bangkok': {
+                hotels: [
+                    { name: '만다린 오리엔탈 방콕', type: 'hotel', priceLevel: 'high' },
+                    { name: '킴튼 말라이 방콕', type: 'hotel', priceLevel: 'high' },
+                    { name: '이스틴 그랜드 사톤', type: 'hotel', priceLevel: 'mid' },
+                    { name: '러브디 방콕 시암', type: 'hostel', priceLevel: 'low' }
+                ],
+                cafes: ['팩토리 커피 (Factory Coffee)', '티추카 루프탑 바', '애프터 유 (After You)', '로스트 (Roast)'],
+                spots: ['왓 아룬 (새벽사원)', '아이콘시암', '조드페어 야시장', '룸피니 공원']
+            },
+            'danang': {
+                hotels: [
+                    { name: '인터컨티넨탈 다낭', type: 'hotel', priceLevel: 'high' },
+                    { name: '나만 리트리트', type: 'hotel', priceLevel: 'high' },
+                    { name: '살라 다낭 비치 호텔', type: 'hotel', priceLevel: 'mid' },
+                    { name: '윙크 호텔 다낭', type: 'hotel', priceLevel: 'low' }
+                ],
+                cafes: ['콩카페 1호점', '웃티크 (Ut Tich)', '선짜 마리나', '원더러스트'],
+                spots: ['바나힐', '미케비치', '용다리', '호이안 올드타운 (근교)']
+            },
+            'fukuoka': {
+                hotels: [
+                    { name: '리츠칼튼 후쿠오카', type: 'hotel', priceLevel: 'high' },
+                    { name: '미야코 호텔 하카타', type: 'hotel', priceLevel: 'high' },
+                    { name: '도미인 프리미엄 하카타', type: 'hotel', priceLevel: 'mid' },
+                    { name: '더 밀레니얼스 후쿠오카', type: 'hostel', priceLevel: 'low' }
+                ],
+                cafes: ['FUK COFFEE', '아이보리쉬 (Ivorish)', '백금다방', '무츠카도'],
+                spots: ['모모치 해변', '후쿠오카 타워', '캐널시티 하카타', '다자이후 텐만구']
+            },
+            'osaka': {
+                hotels: [
+                    { name: '콘래드 오사카', type: 'hotel', priceLevel: 'high' },
+                    { name: '호텔 한큐 레스파이어', type: 'hotel', priceLevel: 'mid' },
+                    { name: '칸데오 호텔 난바', type: 'hotel', priceLevel: 'mid' },
+                    { name: '호스텔 와사비 오사카', type: 'hostel', priceLevel: 'low' }
+                ],
+                cafes: ['모토커피', '시아와세노 팬케이크', '하브스 난바', '스트리머 커피'],
+                spots: ['유니버설 스튜디오 재팬', '도톤보리', '오사카성', '우메다 스카이빌딩']
+            },
+            'tokyo': {
+                hotels: [
+                    { name: '아만 도쿄', type: 'hotel', priceLevel: 'high' },
+                    { name: '신주쿠 프린스 호텔', type: 'hotel', priceLevel: 'mid' },
+                    { name: '호텔 그레이서리 신주쿠', type: 'hotel', priceLevel: 'mid' },
+                    { name: '누이 호스텔 & 바 라운지', type: 'hostel', priceLevel: 'low' }
+                ],
+                cafes: ['블루보틀 아오야마', '푸글렌 도쿄', '카페 키츠네', '오니버스 커피'],
+                spots: ['시부야 스카이', '팀랩 플래닛', '센소지', '도쿄 디즈니씨']
+            },
             'busan': {
                 hotels: [
                     { name: '시그니엘 부산', type: 'hotel', priceLevel: 'high' },
@@ -139,26 +200,26 @@
                 cafes: ['어니언 안국', '블루보틀 성수', '런던베이글뮤지엄', '스타벅스 경동1960'],
                 spots: ['경복궁', 'N서울타워', '더현대 서울', '익선동 한옥거리']
             },
-             'osaka': {
+            'paris': {
                 hotels: [
-                    { name: '콘래드 오사카', type: 'hotel', priceLevel: 'high' },
-                    { name: '호텔 한큐 레스파이어', type: 'hotel', priceLevel: 'mid' },
-                    { name: '도미인 프리미엄 난바', type: 'hotel', priceLevel: 'mid' },
-                    { name: '호스텔 와사비 오사카', type: 'hostel', priceLevel: 'low' }
+                    { name: '리츠 파리', type: 'hotel', priceLevel: 'high' },
+                    { name: '풀만 파리 투르 에펠', type: 'hotel', priceLevel: 'high' },
+                    { name: '노보텔 레알', type: 'hotel', priceLevel: 'mid' },
+                    { name: '제너레이터 파리', type: 'hostel', priceLevel: 'low' }
                 ],
-                cafes: ['모토커피', '시아와세노 팬케이크', '하브스 난바', '스트리머 커피'],
-                spots: ['유니버설 스튜디오 재팬', '도톤보리', '오사카성', '우메다 스카이빌딩']
+                cafes: ['카페 드 플로르', '안젤리나', '셰익스피어 앤 컴퍼니', '마레 지구 카페'],
+                spots: ['에펠탑', '루브르 박물관', '몽마르뜨 언덕', '베르사유 궁전']
             },
-            'tokyo': {
+             'new_york': {
                 hotels: [
-                    { name: '아만 도쿄', type: 'hotel', priceLevel: 'high' },
-                    { name: '신주쿠 프린스 호텔', type: 'hotel', priceLevel: 'mid' },
-                    { name: '호텔 그레이서리 신주쿠', type: 'hotel', priceLevel: 'mid' },
-                    { name: '누이 호스텔 & 바 라운지', type: 'hostel', priceLevel: 'low' }
+                    { name: '더 플라자 호텔', type: 'hotel', priceLevel: 'high' },
+                    { name: '1 호텔 브루클린 브릿지', type: 'hotel', priceLevel: 'high' },
+                    { name: '포드 타임스 스퀘어', type: 'hotel', priceLevel: 'mid' },
+                    { name: 'HI NYC 호스텔', type: 'hostel', priceLevel: 'low' }
                 ],
-                cafes: ['블루보틀 아오야마', '푸글렌 도쿄', '카페 키츠네', '오니버스 커피'],
-                spots: ['시부야 스카이', '팀랩 플래닛', '센소지', '도쿄 디즈니씨']
-            },
+                cafes: ['데보시온', '블루스톤 레인', '매그놀리아 베이커리', '랄프스 커피'],
+                spots: ['센트럴 파크', '타임스 스퀘어', '자유의 여신상', '탑 오브 더 락']
+            }
         };
 
         const RAW_CITIES = [
@@ -470,42 +531,53 @@
                  }).slice(0, 50);
              }, [cityCosts]);
 
+             // 🆕 [핵심] 도시 이름 매핑 및 추천 데이터 생성기
              const getCityRecommendations = (cityName, cityData) => {
+                 // 1. 도시 이름 정규화 및 키 찾기
                  const nameKeyMap = {
-                     '부산': 'busan', '제주': 'jeju', '서울': 'seoul', '오사카': 'osaka', '도쿄': 'tokyo',
-                     '방콕': 'bangkok', '다낭': 'danang', '파리': 'paris', '뉴욕': 'new_york'
+                     '부산': 'busan', '제주': 'jeju', '서울': 'seoul', '오사카': 'osaka', '도쿄': 'tokyo', '후쿠오카': 'fukuoka',
+                     '방콕': 'bangkok', '다낭': 'danang', '치앙마이': 'chiangmai', '파리': 'paris', '뉴욕': 'new_york'
                  };
                  
-                 const cityKeyPart = cityName.split(' ')[0]; 
-                 const cityKey = nameKeyMap[cityKeyPart];
+                 // "부산 (한국)" -> "부산" 추출
+                 const pureCityName = cityName.split(' (')[0]; 
+                 const cityKey = nameKeyMap[pureCityName];
+                 
                  let specificData = null;
                  
+                 // 2. 실제 데이터가 있으면 가져옴
                  if (cityKey && CITY_SPECIFIC_DATA[cityKey]) {
                      specificData = CITY_SPECIFIC_DATA[cityKey];
                  }
 
+                 // 3. 숙소 추천 리스트 생성 (예산에 따라 정렬)
                  let hotels = [];
+                 
                  if (specificData) {
-                     if (budget >= 1500000) {
-                         hotels = specificData.hotels.sort((a, b) => (a.priceLevel === 'high' ? -1 : 1));
+                     // 실제 데이터가 있는 경우: 예산에 맞춰 정렬
+                     if (budget >= 1500000) { 
+                         // 예산 넉넉 -> 고급 호텔 우선, 저렴한 곳은 뒤로
+                         hotels = [...specificData.hotels].sort((a, b) => (a.priceLevel === 'high' ? -1 : 1));
                      } else { 
-                         hotels = specificData.hotels.sort((a, b) => (a.priceLevel === 'low' ? -1 : 1));
+                         // 예산 부족 -> 저렴한 숙소 우선, 비싼 곳은 뒤로
+                         hotels = [...specificData.hotels].sort((a, b) => (a.priceLevel === 'low' ? -1 : 1));
                      }
                      
+                     // 가격 정보 매핑 (priceLevel -> 실제 가격)
                      hotels = hotels.map(h => ({
                          name: h.name,
                          price: h.priceLevel === 'high' ? cityData.hotel * 1.5 : h.priceLevel === 'mid' ? cityData.hotel : cityData.hostel
                      }));
 
                  } else {
-                     const name = cityName.split(' (')[0];
+                     // 데이터가 없는 경우 (가상 데이터 생성) - 랜덤 다양성 추가
                      const randomAdjectives = ['그랜드', '센트럴', '로얄', '시티', '부티크', '가든', '뷰'];
                      const adj = randomAdjectives[Math.floor(Math.random() * randomAdjectives.length)];
                      
-                     const highHotel = { name: `${name} ${adj} 호텔`, price: cityData.hotel * 1.3 };
-                     const midHotel = { name: `${name} 시티 비즈니스 호텔`, price: cityData.hotel * 0.9 };
-                     const airbnb = { name: `감성 에어비앤비 - ${name} 중심가`, price: cityData.airbnb };
-                     const hostel = { name: `${name} 백패커스 호스텔`, price: cityData.hostel };
+                     const highHotel = { name: `${pureCityName} ${adj} 호텔`, price: cityData.hotel * 1.3 };
+                     const midHotel = { name: `${pureCityName} 시티 비즈니스 호텔`, price: cityData.hotel * 0.9 };
+                     const airbnb = { name: `감성 에어비앤비 - ${pureCityName} 중심가`, price: cityData.airbnb };
+                     const hostel = { name: `${pureCityName} 백패커스 호스텔`, price: cityData.hostel };
 
                      if (budget >= 1500000) {
                          hotels = [highHotel, midHotel, airbnb];
@@ -516,14 +588,14 @@
                      }
                  }
 
+                 // 4. 카페/명소 데이터
                  let cafes = [], spots = [];
                  if (specificData) {
                      cafes = specificData.cafes;
                      spots = specificData.spots;
                  } else {
-                      const name = cityName.split(' (')[0];
-                      cafes = [`카페 ${name}`, `스타벅스 ${name}점`, `${name} 로스터리`];
-                      spots = [`${name} 중앙 공원`, `${name} 야시장`, `${name} 올드타운`];
+                      cafes = [`카페 ${pureCityName}`, `스타벅스 ${pureCityName}점`, `${pureCityName} 로스터리`];
+                      spots = [`${pureCityName} 중앙 공원`, `${pureCityName} 야시장`, `${pureCityName} 올드타운`];
                  }
 
                  return { hotels, cafes, spots };
