@@ -31,7 +31,6 @@
         .input-base:focus { border-color: #FB923C; background-color: #FFF; }
         .icon-wrapper { display: inline-flex; align-items: center; justify-content: center; }
         .rank-bar { transition: width 1s ease-out; }
-        /* 셀렉트 박스 화살표 스타일링 */
         select.input-base { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em; }
     </style>
 </head>
@@ -46,9 +45,7 @@
 
         const { useState, useEffect, useRef, useMemo } = React;
 
-        // =========================================================================
-        // 1. 아이콘 컴포넌트 정의
-        // =========================================================================
+        // --- 아이콘 컴포넌트 ---
         const Icon = ({ name, className, onClick }) => <i onClick={onClick} className={`fa-solid ${name} ${className} icon-wrapper`}></i>;
         const Plane = (p) => <Icon name="fa-plane" {...p} />;
         const Hotel = (p) => <Icon name="fa-hotel" {...p} />;
@@ -86,17 +83,16 @@
         const Building = (p) => <Icon name="fa-building-columns" {...p} />;
         const MapPin = (p) => <Icon name="fa-map-pin" {...p} />;
 
-        // =========================================================================
-        // 2. 데이터 상수 정의
-        // =========================================================================
-        
-        // 🆕 은행 목록 데이터
-        const BANK_LIST = [
-            "NH농협", "카카오뱅크", "KB국민", "토스뱅크", "신한", "우리", "IBK기업", "하나", "새마을", "부산", 
-            "iM뱅크", "케이뱅크", "신협", "우체국", "SC제일", "경남", "광주", "수협", "전북", "저축은행", 
-            "제주", "씨티", "KDB 산업", "산림조합", "SBI저축은행", "BOA", "중국", "HSBC", "중국공상", 
-            "도이치", "JP모건", "BNP 파리바", "중국건설"
-        ];
+        const StarRating = ({ score, setScore, editable }) => (
+            <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map(s => (
+                    <i key={s} className={`fa-solid fa-star text-xs ${s <= score ? 'text-yellow-400' : 'text-gray-300'} ${editable ? 'cursor-pointer hover:scale-110 transition' : ''}`} onClick={() => editable && setScore && setScore(s)}></i>
+                ))}
+            </div>
+        );
+
+        // --- 데이터 ---
+        const BANK_LIST = ["NH농협", "카카오뱅크", "KB국민", "토스뱅크", "신한", "우리", "IBK기업", "하나", "새마을", "부산", "iM뱅크", "케이뱅크", "신협", "우체국", "SC제일", "경남", "광주", "수협", "전북", "저축은행", "제주", "씨티", "KDB 산업", "산림조합", "SBI저축은행", "BOA", "중국", "HSBC", "중국공상", "도이치", "JP모건", "BNP 파리바", "중국건설"];
 
         const PRICE_TIERS = {
             1: { flight: 350000, hostel: 8000, airbnb: 30000, hotel: 60000, food: 5000, coffee: 2000 },
@@ -105,6 +101,100 @@
             4: { flight: 1200000, hostel: 60000, airbnb: 150000, hotel: 250000, food: 35000, coffee: 7000 },
             5: { flight: 1600000, hostel: 100000, airbnb: 250000, hotel: 400000, food: 50000, coffee: 9000 },
             6: { flight: 40000, hostel: 25000, airbnb: 80000, hotel: 150000, food: 15000, coffee: 4500 } 
+        };
+
+        // 🆕 [데이터 확장] 실제 유명한 숙소/장소 데이터 (일부 도시)
+        const CITY_SPECIFIC_DATA = {
+            'busan': {
+                hotels: [
+                    { name: '시그니엘 부산', type: 'hotel', priceLevel: 'high' },
+                    { name: '파라다이스 호텔 부산', type: 'hotel', priceLevel: 'high' },
+                    { name: '광안리 켄트호텔', type: 'hotel', priceLevel: 'mid' },
+                    { name: '해운대 게스트하우스', type: 'hostel', priceLevel: 'low' }
+                ],
+                cafes: ['웨이브온 커피', '카페 레이어드 신세계센텀', '블랙업커피', '신기산업'],
+                spots: ['해운대 블루라인파크', '흰여울문화마을', '감천문화마을', '광안대교']
+            },
+            'jeju': {
+                hotels: [
+                    { name: '제주 신라호텔', type: 'hotel', priceLevel: 'high' },
+                    { name: '그랜드 조선 제주', type: 'hotel', priceLevel: 'high' },
+                    { name: '랜딩관 제주신화월드', type: 'hotel', priceLevel: 'mid' },
+                    { name: '제주 또랑 게스트하우스', type: 'hostel', priceLevel: 'low' }
+                ],
+                cafes: ['원앤온리', '우무', '카페 노티드 제주', '테라로사 서귀포'],
+                spots: ['성산일출봉', '우도', '함덕해수욕장', '아르떼뮤지엄']
+            },
+            'seoul': {
+                hotels: [
+                    { name: '서울 신라호텔', type: 'hotel', priceLevel: 'high' },
+                    { name: '포시즌스 호텔 서울', type: 'hotel', priceLevel: 'high' },
+                    { name: 'L7 홍대', type: 'hotel', priceLevel: 'mid' },
+                    { name: '서울 큐브 이태원', type: 'hostel', priceLevel: 'low' }
+                ],
+                cafes: ['어니언 안국', '블루보틀 성수', '런던베이글뮤지엄', '스타벅스 경동1960'],
+                spots: ['경복궁', 'N서울타워', '더현대 서울', '익선동 한옥거리']
+            },
+            'osaka': {
+                hotels: [
+                    { name: '콘래드 오사카', type: 'hotel', priceLevel: 'high' },
+                    { name: '호텔 한큐 레스파이어', type: 'hotel', priceLevel: 'mid' },
+                    { name: '도미인 프리미엄 난바', type: 'hotel', priceLevel: 'mid' },
+                    { name: '호스텔 와사비 오사카', type: 'hostel', priceLevel: 'low' }
+                ],
+                cafes: ['모토커피', '시아와세노 팬케이크', '하브스 난바', '스트리머 커피'],
+                spots: ['유니버설 스튜디오 재팬', '도톤보리', '오사카성', '우메다 스카이빌딩']
+            },
+            'tokyo': {
+                hotels: [
+                    { name: '아만 도쿄', type: 'hotel', priceLevel: 'high' },
+                    { name: '신주쿠 프린스 호텔', type: 'hotel', priceLevel: 'mid' },
+                    { name: '호텔 그레이서리 신주쿠', type: 'hotel', priceLevel: 'mid' },
+                    { name: '누이 호스텔 & 바 라운지', type: 'hostel', priceLevel: 'low' }
+                ],
+                cafes: ['블루보틀 아오야마', '푸글렌 도쿄', '카페 키츠네', '오니버스 커피'],
+                spots: ['시부야 스카이', '팀랩 플래닛', '센소지', '도쿄 디즈니씨']
+            },
+            'bangkok': {
+                hotels: [
+                    { name: '만다린 오리엔탈 방콕', type: 'hotel', priceLevel: 'high' },
+                    { name: '이스틴 그랜드 사톤', type: 'hotel', priceLevel: 'mid' },
+                    { name: '아바니 리버사이드', type: 'hotel', priceLevel: 'mid' },
+                    { name: '러브디 방콕 시암', type: 'hostel', priceLevel: 'low' }
+                ],
+                cafes: ['팩토리 커피', '더 커먼스', '애프터 유', '로스트'],
+                spots: ['왓 아룬', '카오산 로드', '아이콘시암', '짜뚜짝 시장']
+            },
+            'danang': {
+                hotels: [
+                    { name: '인터컨티넨탈 다낭', type: 'hotel', priceLevel: 'high' },
+                    { name: '하얏트 리젠시 다낭', type: 'hotel', priceLevel: 'high' },
+                    { name: '살라 다낭 비치 호텔', type: 'hotel', priceLevel: 'mid' },
+                    { name: '더 시크릿 가든 호스텔', type: 'hostel', priceLevel: 'low' }
+                ],
+                cafes: ['콩카페 1호점', '더 하이랜드 커피', '웃티크', '원더러스트'],
+                spots: ['바나힐', '미케비치', '용다리', '오행산']
+            },
+            'paris': {
+                hotels: [
+                    { name: '리츠 파리', type: 'hotel', priceLevel: 'high' },
+                    { name: '풀만 파리 투르 에펠', type: 'hotel', priceLevel: 'high' },
+                    { name: '노보텔 레알', type: 'hotel', priceLevel: 'mid' },
+                    { name: '제너레이터 파리', type: 'hostel', priceLevel: 'low' }
+                ],
+                cafes: ['카페 드 플로르', '안젤리나', '셰익스피어 앤 컴퍼니', '마레 지구 카페'],
+                spots: ['에펠탑', '루브르 박물관', '몽마르뜨 언덕', '베르사유 궁전']
+            },
+            'new_york': {
+                hotels: [
+                    { name: '더 플라자 호텔', type: 'hotel', priceLevel: 'high' },
+                    { name: '1 호텔 브루클린 브릿지', type: 'hotel', priceLevel: 'high' },
+                    { name: '포드 타임스 스퀘어', type: 'hotel', priceLevel: 'mid' },
+                    { name: 'HI NYC 호스텔', type: 'hostel', priceLevel: 'low' }
+                ],
+                cafes: ['데보시온', '블루스톤 레인', '매그놀리아 베이커리', '랄프스 커피'],
+                spots: ['센트럴 파크', '타임스 스퀘어', '자유의 여신상', '탑 오브 더 락']
+            }
         };
 
         const RAW_CITIES = [
@@ -159,7 +249,7 @@
         const CITIES_DB = RAW_CITIES.reduce((acc, [name, tier]) => {
             const id = name.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, ''); 
             const uniqueId = acc[id] ? `${id}_${Math.floor(Math.random()*100)}` : id;
-            acc[uniqueId] = { name: name, ...PRICE_TIERS[tier] };
+            acc[uniqueId] = { name: name, ...PRICE_TIERS[tier], id: uniqueId }; // ID 저장
             return acc;
         }, {});
 
@@ -387,13 +477,16 @@
             );
         }
 
+        // 🆕 [업그레이드된 예산 맞춤 추천] - (가능)/(불가능) + 예산별 숙소 추천 로직 적용
         function BudgetRecommender() {
              const [budget, setBudget] = useState(2000000);
              const [selectedCity, setSelectedCity] = useState(null);
 
+             // 1. 모든 도시의 예상 비용 계산
              const cityCosts = useMemo(() => {
                  return Object.keys(CITIES_DB).map(key => {
                      const city = CITIES_DB[key];
+                     // 대략 7일 여행 기준 비용 계산
                      const estimatedCost = city.flight + (city.airbnb * 7) + (city.food * 14);
                      return {
                          key,
@@ -404,28 +497,93 @@
                  });
              }, [budget]);
 
+             // 2. (가능)한 순서대로 정렬 + 상위 50개만 표시 (성능 위해)
              const sortedCities = useMemo(() => {
                  return cityCosts.sort((a, b) => {
-                     if (a.isPossible === b.isPossible) return a.cost - b.cost;
+                     // 가능(true)이 먼저 오게
+                     if (a.isPossible === b.isPossible) return a.cost - b.cost; // 비용 낮은 순
                      return a.isPossible ? -1 : 1;
                  }).slice(0, 50);
              }, [cityCosts]);
 
+             // 🆕 도시별/예산별 맞춤 추천 데이터 생성기
              const getCityRecommendations = (cityName, cityData) => {
-                 const name = cityName.split(' (')[0];
-                 const hostelPrice = cityData.hostel;
-                 const hotelPrice = cityData.hotel;
-                 const airbnbPrice = cityData.airbnb;
-
-                 return {
-                     hotels: [
-                        { name: `${name} 그랜드 호텔`, price: hotelPrice * 1.2 },
-                        { name: `${name} 시티 호스텔`, price: hostelPrice }, 
-                        { name: `에어비앤비 - ${name} 센터`, price: airbnbPrice }
-                     ],
-                     cafes: [`카페 ${name}`, `스타벅스 ${name}점`, `${name} 로스터리`],
-                     spots: [`${name} 중앙 공원`, `${name} 야시장`, `${name} 올드타운`]
+                 // 1. 하드코딩된 데이터가 있는지 확인 (ID로 조회)
+                 // 도시 이름이 '제주도 (한국)' 형식이므로 ID를 추출하거나 매핑 필요
+                 // 여기서는 간단히 이름 기반 매핑 시도 (실제로는 ID 기반이 더 안전)
+                 let specificData = null;
+                 
+                 // 이름 매핑 (한글 -> 키)
+                 const nameKeyMap = {
+                     '부산': 'busan', '제주': 'jeju', '서울': 'seoul', '오사카': 'osaka', '도쿄': 'tokyo',
+                     '방콕': 'bangkok', '다낭': 'danang', '파리': 'paris', '뉴욕': 'new_york'
                  };
+                 
+                 const cityKeyPart = cityName.split(' ')[0]; // "부산"
+                 const cityKey = nameKeyMap[cityKeyPart];
+                 
+                 if (cityKey && CITY_SPECIFIC_DATA[cityKey]) {
+                     specificData = CITY_SPECIFIC_DATA[cityKey];
+                 }
+
+                 // 2. 숙소 추천 리스트 생성 (예산에 따라 정렬)
+                 let hotels = [];
+                 
+                 if (specificData) {
+                     // 실제 데이터가 있는 경우
+                     if (budget >= 1500000) { // 예산 넉넉 -> 고급 호텔 우선
+                         hotels = specificData.hotels.sort((a, b) => (a.priceLevel === 'high' ? -1 : 1));
+                     } else { // 예산 부족 -> 저렴한 숙소 우선
+                         hotels = specificData.hotels.sort((a, b) => (a.priceLevel === 'low' ? -1 : 1));
+                     }
+                     
+                     // 가격 정보 매핑 (priceLevel -> 실제 가격)
+                     hotels = hotels.map(h => ({
+                         name: h.name,
+                         price: h.priceLevel === 'high' ? cityData.hotel * 1.5 : h.priceLevel === 'mid' ? cityData.hotel : cityData.hostel
+                     }));
+
+                 } else {
+                     // 데이터가 없는 경우 (가상 데이터 생성) - 랜덤 다양성 추가
+                     const name = cityName.split(' (')[0];
+                     const randomAdjectives = ['그랜드', '센트럴', '로얄', '시티', '부티크', '가든', '뷰'];
+                     const adj = randomAdjectives[Math.floor(Math.random() * randomAdjectives.length)];
+                     
+                     const highHotel = { name: `${name} ${adj} 호텔`, price: cityData.hotel * 1.3 };
+                     const midHotel = { name: `${name} 시티 비즈니스 호텔`, price: cityData.hotel * 0.9 };
+                     const airbnb = { name: `감성 에어비앤비 - ${name} 중심가`, price: cityData.airbnb };
+                     const hostel = { name: `${name} 백패커스 호스텔`, price: cityData.hostel };
+
+                     if (budget >= 1500000) {
+                         hotels = [highHotel, midHotel, airbnb];
+                     } else if (budget >= 800000) {
+                         hotels = [midHotel, airbnb, hostel];
+                     } else {
+                         hotels = [hostel, airbnb, midHotel];
+                     }
+                 }
+
+                 // 3. 카페/명소 데이터
+                 let cafes = [], spots = [];
+                 if (specificData) {
+                     cafes = specificData.cafes;
+                     spots = specificData.spots;
+                 } else {
+                      const name = cityName.split(' (')[0];
+                      cafes = [`카페 ${name}`, `스타벅스 ${name}점`, `${name} 로스터리`];
+                      spots = [`${name} 중앙 공원`, `${name} 야시장`, `${name} 올드타운`];
+                 }
+
+                 return { hotels, cafes, spots };
+             };
+
+             // 🆕 아고다 검색 링크 생성 (구체적 호텔명 포함)
+             const openHotelSearch = (hotelName, cityName) => {
+                 const cid = "123456"; // 사장님 CID
+                 // 호텔 이름 + 도시 이름으로 검색 정확도 높임
+                 const query = `${cityName.split(' (')[0]} ${hotelName}`;
+                 const url = `https://www.agoda.com/search?cid=${cid}&text=${encodeURIComponent(query)}`;
+                 window.open(url, '_blank');
              };
 
              // 🆕 구글 맵으로 이동하는 함수
@@ -435,6 +593,7 @@
 
              return (
                 <div className="max-w-md mx-auto mt-4 px-4 relative">
+                    {/* 상세 추천 모달 */}
                     {selectedCity && (
                         <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
                             <div className="absolute inset-0 bg-black/50 rounded-[24px]" onClick={() => setSelectedCity(null)}></div>
@@ -443,30 +602,71 @@
                                     <h3 className="text-xl font-bold text-gray-800">{selectedCity.name}</h3>
                                     <button onClick={() => setSelectedCity(null)} className="text-gray-400 hover:text-gray-600"><X className="w-6 h-6" /></button>
                                 </div>
-                                <p className="text-xs text-center text-orange-500 mb-6 font-bold">✨ 이 도시의 추천 핫플 & 예상 가격</p>
+                                <p className="text-xs text-center text-orange-500 mb-6 font-bold">✨ {budget >= 1500000 ? '럭셔리하게 즐기는' : '가성비 좋게 즐기는'} 추천 핫플</p>
                                 
                                 <div className="space-y-6 flex-1 overflow-y-auto">
+                                    {/* 숙소 */}
                                     <div>
-                                        <h4 className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-3 border-b pb-2"><Hotel className="w-4 h-4 text-pink-500" /> 추천 숙소 (1박 기준)</h4>
+                                        <h4 className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-3 border-b pb-2">
+                                            <Hotel className="w-4 h-4 text-pink-500" /> 추천 숙소 (1박 기준)
+                                        </h4>
                                         <ul className="space-y-3">
                                             {getCityRecommendations(selectedCity.name, selectedCity).hotels.map((item, idx) => (
-                                                <li key={idx} className="flex justify-between items-center text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                                                <li key={idx} 
+                                                    onClick={() => openHotelSearch(item.name, selectedCity.name)}
+                                                    className="flex justify-between items-center text-sm text-gray-600 bg-gray-50 p-3 rounded-lg cursor-pointer hover:bg-pink-50 transition group"
+                                                >
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-[10px] bg-pink-100 text-pink-500 px-1.5 py-0.5 rounded font-bold">HOT</span>
-                                                        <span className="font-medium text-gray-700">{item.name}</span>
+                                                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${idx === 0 ? 'bg-pink-100 text-pink-500' : 'bg-gray-200 text-gray-500'}`}>
+                                                            {idx === 0 ? 'BEST' : idx + 1}
+                                                        </span>
+                                                        <span className="font-medium text-gray-700 group-hover:text-pink-500 group-hover:underline underline-offset-2">{item.name}</span>
                                                     </div>
+                                                    <span className="text-xs font-bold text-gray-500">약 {item.price.toLocaleString()}원</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                        <p className="text-[10px] text-gray-400 mt-2 text-right">* 클릭하면 최저가 예약 페이지로 이동합니다.</p>
+                                    </div>
+
+                                    {/* 카페 */}
+                                    <div>
+                                        <h4 className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-3 border-b pb-2">
+                                            <Coffee className="w-4 h-4 text-brown-500" /> 인기 카페
+                                        </h4>
+                                        <ul className="space-y-2">
+                                            {getCityRecommendations(selectedCity.name, selectedCity).cafes.map((item, idx) => (
+                                                <li key={idx} className="flex justify-between items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-xs font-bold text-gray-500">약 {item.price.toLocaleString()}원</span>
-                                                        <button onClick={() => openMap(item.name)} className="text-gray-400 hover:text-blue-500"><MapPin className="w-4 h-4" /></button>
+                                                        <span className="text-xs bg-orange-100 text-orange-500 px-1.5 rounded">☕</span> {item}
                                                     </div>
+                                                    <button onClick={() => openMap(item)} className="text-gray-400 hover:text-blue-500"><MapPin className="w-4 h-4" /></button>
                                                 </li>
                                             ))}
                                         </ul>
                                     </div>
-                                    <div><h4 className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-3 border-b pb-2"><Coffee className="w-4 h-4 text-brown-500" /> 인기 카페</h4><ul className="space-y-2">{getCityRecommendations(selectedCity.name, selectedCity).cafes.map((item, idx) => (<li key={idx} className="flex justify-between items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg"><div className="flex items-center gap-2"><span className="text-xs bg-orange-100 text-orange-500 px-1.5 rounded">☕</span> {item}</div><button onClick={() => openMap(item)} className="text-gray-400 hover:text-blue-500"><MapPin className="w-4 h-4" /></button></li>))}</ul></div>
-                                    <div><h4 className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-3 border-b pb-2"><Camera className="w-4 h-4 text-blue-500" /> 가볼만한 곳</h4><ul className="space-y-2">{getCityRecommendations(selectedCity.name, selectedCity).spots.map((item, idx) => (<li key={idx} className="flex justify-between items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg"><div className="flex items-center gap-2"><span className="text-xs bg-blue-100 text-blue-500 px-1.5 rounded">📍</span> {item}</div><button onClick={() => openMap(item)} className="text-gray-400 hover:text-blue-500"><MapPin className="w-4 h-4" /></button></li>))}</ul></div>
+
+                                    {/* 명소 */}
+                                    <div>
+                                        <h4 className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-3 border-b pb-2">
+                                            <Camera className="w-4 h-4 text-blue-500" /> 가볼만한 곳
+                                        </h4>
+                                        <ul className="space-y-2">
+                                            {getCityRecommendations(selectedCity.name, selectedCity).spots.map((item, idx) => (
+                                                <li key={idx} className="flex justify-between items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-xs bg-blue-100 text-blue-500 px-1.5 rounded">📍</span> {item}
+                                                    </div>
+                                                    <button onClick={() => openMap(item)} className="text-gray-400 hover:text-blue-500"><MapPin className="w-4 h-4" /></button>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
                                 </div>
-                                <button onClick={() => setSelectedCity(null)} className="w-full mt-6 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition">닫기</button>
+
+                                <button onClick={() => setSelectedCity(null)} className="w-full mt-6 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition">
+                                    닫기
+                                </button>
                             </div>
                         </div>
                     )}
@@ -495,6 +695,7 @@
             );
         }
 
+        // 🆕 4. 복구된 성향 테스트 컴포넌트
         function MbtiAnalyzer() {
             const [step, setStep] = useState(0); 
             const [answers, setAnswers] = useState({});
@@ -559,11 +760,46 @@
         }
 
         function ReviewBoard({ userPoints, setUserPoints, user, openLogin }) {
-             const [reviews, setReviews] = useState(() => { const s = localStorage.getItem('yeoja_reviews'); return s ? JSON.parse(s) : [{id:1, user:'여행조아', content:'추천해요!', city:'발리'}]; });
+             const [reviews, setReviews] = useState(() => { const s = localStorage.getItem('yeoja_reviews'); return s ? JSON.parse(s) : [{id:1, user:'여행조아', content:'추천해요!', city:'발리', rating: 5, date:'2023.10.01'}]; });
              const [text, setText] = useState('');
+             const [rating, setRating] = useState(5);
+             const [isAllReviewsOpen, setIsAllReviewsOpen] = useState(false);
+             const [editingId, setEditingId] = useState(null);
+             const [editForm, setEditForm] = useState({ text: '', rating: 5 });
+
              useEffect(() => localStorage.setItem('yeoja_reviews', JSON.stringify(reviews)), [reviews]);
-             const handleSubmit = (e) => { e.preventDefault(); if(!user) return openLogin(); if(!text) return; setReviews([{id:Date.now(), user:user.name, content:text, city:'여행중'}, ...reviews]); setText(''); setUserPoints(p => p+300); alert('300P 적립! (페이백 포인트)'); };
-             return <div className="bg-white rounded-[24px] border border-[#F0E6D8] p-5 h-[500px] flex flex-col"><div className="mb-4 font-bold border-b pb-2">💬 노마드 톡</div><div className="text-xs text-gray-500 mb-2">리뷰 쓰고 <span className="text-orange-500 font-bold">포인트(페이백)</span> 받자!</div><div className="flex-1 overflow-y-auto space-y-3 mb-4">{reviews.map(r => <div key={r.id} className="bg-[#FAFAFA] p-3 rounded-xl"><span className="font-bold text-xs">{r.user}</span><p className="text-sm">{r.content}</p></div>)}</div><form onSubmit={handleSubmit} className="relative"><input value={text} onChange={e=>setText(e.target.value)} className="w-full p-3 bg-[#FAFAFA] rounded-xl outline-none" placeholder={user?"리뷰작성":"로그인필요"} disabled={!user}/><button className="absolute right-3 top-3 text-orange-400"><Send className="w-4 h-4"/></button></form></div>;
+             const handleSubmit = (e) => { e.preventDefault(); if(!user) return openLogin(); if(!text.trim()) return; setReviews([{id:Date.now(), user:user.name, content:text, city:'여행중', rating, date:new Date().toLocaleDateString()}, ...reviews]); setText(''); setRating(5); setUserPoints(p=>p+300); alert('300P 적립! (페이백 포인트)'); };
+             const handleDelete = (id) => { if(confirm("삭제할까요?")) setReviews(reviews.filter(r=>r.id!==id)); };
+             const startEdit = (r) => { setEditingId(r.id); setEditForm({text:r.content, rating:r.rating}); };
+             const saveEdit = (id) => { setReviews(reviews.map(r=>r.id===id ? {...r, content:editForm.text, rating:editForm.rating} : r)); setEditingId(null); };
+
+             return (
+                <div className="bg-white rounded-[24px] border border-[#F0E6D8] p-5 h-[500px] flex flex-col relative">
+                    {isAllReviewsOpen && (
+                        <div className="absolute inset-0 z-50 bg-white rounded-[24px] p-5 flex flex-col animate-pop">
+                            <div className="flex justify-between items-center mb-4 border-b pb-2"><h3 className="font-bold text-lg">전체 리뷰 ({reviews.length})</h3><button onClick={() => setIsAllReviewsOpen(false)}><X className="w-5 h-5 text-gray-400" /></button></div>
+                            <div className="flex-1 overflow-y-auto space-y-3 scrollbar-hide">{reviews.map(r => <div key={r.id} className="bg-[#FAFAFA] p-3 rounded-xl border border-[#EEE]"><div className="flex justify-between items-start mb-1"><div><span className="font-bold text-sm text-gray-700 mr-2">{r.user}</span><span className="text-[10px] text-gray-400">{r.date}</span></div><StarRating score={r.rating} /></div><p className="text-sm text-gray-600">{r.content}</p></div>)}</div>
+                        </div>
+                    )}
+                    <div className="mb-2 font-bold border-b pb-2 flex justify-between items-center"><span className="flex items-center gap-2"><MessageSquare className="w-4 h-4 text-orange-400"/> 노마드 톡</span><span className="text-xs text-gray-400 font-normal">총 {reviews.length}개</span></div>
+                    <div className="flex-1 overflow-y-auto space-y-3 mb-4 scrollbar-hide">
+                        {reviews.slice(0, 5).map(r => (
+                            <div key={r.id} className="bg-[#FAFAFA] p-3 rounded-xl border border-[#EEE] group">
+                                {editingId === r.id ? (
+                                    <div className="space-y-2"><div className="flex justify-between"><StarRating score={editForm.rating} setScore={(s)=>setEditForm({...editForm, rating:s})} editable /><div className="flex gap-1"><button onClick={()=>saveEdit(r.id)} className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded">저장</button><button onClick={()=>setEditingId(null)} className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded">취소</button></div></div><textarea className="w-full p-2 text-sm border rounded-lg" value={editForm.text} onChange={(e)=>setEditForm({...editForm, text:e.target.value})} /></div>
+                                ) : (
+                                    <><div className="flex justify-between items-start mb-1"><div className="flex items-center gap-1"><span className="font-bold text-xs text-gray-700">{r.user}</span><StarRating score={r.rating} /></div>{user && user.name === r.user && (<div className="flex gap-2 opacity-0 group-hover:opacity-100 transition"><Edit className="w-3 h-3 text-gray-400 cursor-pointer hover:text-blue-500" onClick={()=>startEdit(r)} /><Trash className="w-3 h-3 text-gray-400 cursor-pointer hover:text-red-500" onClick={()=>handleDelete(r.id)} /></div>)}</div><p className="text-sm text-gray-600 leading-snug">{r.content}</p></>
+                                )}
+                            </div>
+                        ))}
+                        {reviews.length > 5 && <button onClick={() => setIsAllReviewsOpen(true)} className="w-full text-xs text-gray-400 py-2 hover:text-gray-600">전체 리뷰 보기 ({reviews.length}) 👇</button>}
+                    </div>
+                    <form onSubmit={handleSubmit} className="relative pt-2 border-t border-gray-100">
+                        <div className="flex justify-between items-center mb-2 px-1"><span className="text-xs text-gray-500">별점을 선택하세요</span><StarRating score={rating} setScore={setRating} editable /></div>
+                        <div className="relative"><input value={text} onChange={e=>setText(e.target.value)} className="w-full p-3 pr-10 bg-[#FAFAFA] rounded-xl outline-none text-sm transition focus:bg-white focus:ring-2 focus:ring-orange-100" placeholder={user ? "리뷰를 남겨주세요 (300P)" : "로그인이 필요합니다"} disabled={!user}/><button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-orange-400 hover:scale-110 transition"><Send className="w-4 h-4"/></button></div>
+                    </form>
+                </div>
+            );
         }
 
         function AdModal({ onClose, onReward }) {
