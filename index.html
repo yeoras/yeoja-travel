@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="agd-partner-manual-verification" />
     <title>YEOJA - 여행자 견적 자동화 시스템</title>
     
     <!-- 1. 테일윈드 CSS (디자인) -->
@@ -228,10 +227,13 @@
                         </div>
                         
                         <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-orange-200 shadow-sm">
-                                <div className="w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center text-white text-xs font-bold">$</div>
-                                <span className="text-orange-500 font-bold">{userPoints.toLocaleString()} P</span>
-                            </div>
+                            {/* 🆕 수정된 부분: 로그인을 했을 때만 포인트가 보입니다! */}
+                            {user && (
+                                <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-orange-200 shadow-sm">
+                                    <div className="w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center text-white text-xs font-bold">$</div>
+                                    <span className="text-orange-500 font-bold">{userPoints.toLocaleString()} P</span>
+                                </div>
+                            )}
                             
                             {user ? (
                                 <div className="hidden md:flex items-center gap-2 text-sm font-medium text-[#555] bg-white border border-[#E0E0E0] px-4 py-2 rounded-full shadow-sm">
@@ -402,6 +404,48 @@
             );
         }
 
+        // --- 기타 컴포넌트들 ---
+        function SearchableCitySelect({ value, onChange }) {
+            const [isOpen, setIsOpen] = useState(false);
+            const [searchTerm, setSearchTerm] = useState('');
+            const wrapperRef = useRef(null);
+            
+            // 데이터 로딩 최적화
+            const cities = useMemo(() => Object.keys(CITIES_DB).map(key => ({ key, ...CITIES_DB[key] })), []);
+            const filteredCities = cities.filter(city => city.name.toLowerCase().includes(searchTerm.toLowerCase()));
+            const selectedCityName = CITIES_DB[value]?.name || '도시 선택';
+
+            useEffect(() => {
+                function handleClickOutside(event) { if (wrapperRef.current && !wrapperRef.current.contains(event.target)) { setIsOpen(false); } }
+                document.addEventListener("mousedown", handleClickOutside);
+                return () => document.removeEventListener("mousedown", handleClickOutside);
+            }, [wrapperRef]);
+
+            return (
+                <div className="relative" ref={wrapperRef}>
+                    <div onClick={() => setIsOpen(!isOpen)} className="w-full p-3 rounded-xl border border-[#EEE] bg-[#FAFAFA] cursor-pointer flex justify-between items-center hover:border-orange-200 transition">
+                        <span className="text-[#555]">{selectedCityName}</span>
+                        <ChevronRight className={`w-4 h-4 text-[#AAA] transition-transform ${isOpen ? 'rotate-90' : ''}`} />
+                    </div>
+                    {isOpen && (
+                        <div className="absolute z-50 w-full mt-2 bg-white rounded-xl border border-[#F0E6D8] shadow-lg max-h-60 overflow-hidden flex flex-col">
+                            <div className="p-2 border-b border-[#F5F5F5] flex items-center gap-2">
+                                <Search className="w-4 h-4 text-[#AAA]" />
+                                <input type="text" placeholder="도시 검색 (예: 프라하, 다낭)" className="w-full text-sm outline-none text-[#555]" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} autoFocus />
+                            </div>
+                            <div className="overflow-y-auto flex-1">
+                                {filteredCities.length > 0 ? filteredCities.map((city) => (
+                                    <div key={city.key} onClick={() => { onChange(city.key); setIsOpen(false); setSearchTerm(''); }} className={`p-3 text-sm cursor-pointer hover:bg-orange-50 transition ${value === city.key ? 'bg-orange-50 text-orange-500 font-bold' : 'text-[#666]'}`}>
+                                        {city.name}
+                                    </div>
+                                )) : <div className="p-4 text-center text-xs text-[#AAA]">검색 결과가 없어요 🥲</div>}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
         function RankingBox({ icon, title, data }) {
             return (
                 <div className="bg-white p-5 rounded-[20px] border border-[#F0E6D8] soft-shadow hover:border-orange-200 transition duration-300">
@@ -498,48 +542,6 @@
              useEffect(() => localStorage.setItem('yeoja_reviews', JSON.stringify(reviews)), [reviews]);
              const handleSubmit = (e) => { e.preventDefault(); if(!user) return openLogin(); if(!text) return; setReviews([{id:Date.now(), user:user.name, content:text, city:'여행중'}, ...reviews]); setText(''); setUserPoints(p => p+300); alert('300P 적립!'); };
              return <div className="bg-white rounded-[24px] border border-[#F0E6D8] p-5 h-[500px] flex flex-col"><div className="mb-4 font-bold border-b pb-2">💬 노마드 톡</div><div className="flex-1 overflow-y-auto space-y-3 mb-4">{reviews.map(r => <div key={r.id} className="bg-[#FAFAFA] p-3 rounded-xl"><span className="font-bold text-xs">{r.user}</span><p className="text-sm">{r.content}</p></div>)}</div><form onSubmit={handleSubmit} className="relative"><input value={text} onChange={e=>setText(e.target.value)} className="w-full p-3 bg-[#FAFAFA] rounded-xl outline-none" placeholder={user?"리뷰작성":"로그인필요"} disabled={!user}/><button className="absolute right-3 top-3 text-orange-400"><Send className="w-4 h-4"/></button></form></div>;
-        }
-
-        // --- 기타 컴포넌트들 ---
-        function SearchableCitySelect({ value, onChange }) {
-            const [isOpen, setIsOpen] = useState(false);
-            const [searchTerm, setSearchTerm] = useState('');
-            const wrapperRef = useRef(null);
-            
-            // 데이터 로딩 최적화
-            const cities = useMemo(() => Object.keys(CITIES_DB).map(key => ({ key, ...CITIES_DB[key] })), []);
-            const filteredCities = cities.filter(city => city.name.toLowerCase().includes(searchTerm.toLowerCase()));
-            const selectedCityName = CITIES_DB[value]?.name || '도시 선택';
-
-            useEffect(() => {
-                function handleClickOutside(event) { if (wrapperRef.current && !wrapperRef.current.contains(event.target)) { setIsOpen(false); } }
-                document.addEventListener("mousedown", handleClickOutside);
-                return () => document.removeEventListener("mousedown", handleClickOutside);
-            }, [wrapperRef]);
-
-            return (
-                <div className="relative" ref={wrapperRef}>
-                    <div onClick={() => setIsOpen(!isOpen)} className="w-full p-3 rounded-xl border border-[#EEE] bg-[#FAFAFA] cursor-pointer flex justify-between items-center hover:border-orange-200 transition">
-                        <span className="text-[#555]">{selectedCityName}</span>
-                        <ChevronRight className={`w-4 h-4 text-[#AAA] transition-transform ${isOpen ? 'rotate-90' : ''}`} />
-                    </div>
-                    {isOpen && (
-                        <div className="absolute z-50 w-full mt-2 bg-white rounded-xl border border-[#F0E6D8] shadow-lg max-h-60 overflow-hidden flex flex-col">
-                            <div className="p-2 border-b border-[#F5F5F5] flex items-center gap-2">
-                                <Search className="w-4 h-4 text-[#AAA]" />
-                                <input type="text" placeholder="도시 검색 (예: 프라하, 다낭)" className="w-full text-sm outline-none text-[#555]" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} autoFocus />
-                            </div>
-                            <div className="overflow-y-auto flex-1">
-                                {filteredCities.length > 0 ? filteredCities.map((city) => (
-                                    <div key={city.key} onClick={() => { onChange(city.key); setIsOpen(false); setSearchTerm(''); }} className={`p-3 text-sm cursor-pointer hover:bg-orange-50 transition ${value === city.key ? 'bg-orange-50 text-orange-500 font-bold' : 'text-[#666]'}`}>
-                                        {city.name}
-                                    </div>
-                                )) : <div className="p-4 text-center text-xs text-[#AAA]">검색 결과가 없어요 🥲</div>}
-                            </div>
-                        </div>
-                    )}
-                </div>
-            );
         }
 
         // 앱 렌더링
