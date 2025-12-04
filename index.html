@@ -31,6 +31,8 @@
         .input-base:focus { border-color: #FB923C; background-color: #FFF; }
         .icon-wrapper { display: inline-flex; align-items: center; justify-content: center; }
         .rank-bar { transition: width 1s ease-out; }
+        /* 셀렉트 박스 화살표 스타일링 */
+        select.input-base { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em; }
     </style>
 </head>
 <body class="bg-[#F9F5F0]">
@@ -82,23 +84,19 @@
         const Edit = (p) => <Icon name="fa-pen-to-square" {...p} />;
         const Crown = (p) => <Icon name="fa-crown" {...p} />;
         const Building = (p) => <Icon name="fa-building-columns" {...p} />;
+        const MapPin = (p) => <Icon name="fa-map-pin" {...p} />;
 
         // =========================================================================
-        // 2. 데이터 및 유틸리티 컴포넌트
+        // 2. 데이터 상수 정의
         // =========================================================================
         
-        // [복구됨] 별점 컴포넌트 (전역으로 이동)
-        const StarRating = ({ score, setScore, editable }) => (
-            <div className="flex gap-1">
-                {[1, 2, 3, 4, 5].map(s => (
-                    <i 
-                        key={s} 
-                        className={`fa-solid fa-star text-xs ${s <= score ? 'text-yellow-400' : 'text-gray-300'} ${editable ? 'cursor-pointer hover:scale-110 transition' : ''}`} 
-                        onClick={() => editable && setScore && setScore(s)}
-                    ></i>
-                ))}
-            </div>
-        );
+        // 🆕 은행 목록 데이터
+        const BANK_LIST = [
+            "NH농협", "카카오뱅크", "KB국민", "토스뱅크", "신한", "우리", "IBK기업", "하나", "새마을", "부산", 
+            "iM뱅크", "케이뱅크", "신협", "우체국", "SC제일", "경남", "광주", "수협", "전북", "저축은행", 
+            "제주", "씨티", "KDB 산업", "산림조합", "SBI저축은행", "BOA", "중국", "HSBC", "중국공상", 
+            "도이치", "JP모건", "BNP 파리바", "중국건설"
+        ];
 
         const PRICE_TIERS = {
             1: { flight: 350000, hostel: 8000, airbnb: 30000, hotel: 60000, food: 5000, coffee: 2000 },
@@ -430,6 +428,11 @@
                  };
              };
 
+             // 🆕 구글 맵으로 이동하는 함수
+             const openMap = (placeName) => {
+                 window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(placeName)}`, '_blank');
+             };
+
              return (
                 <div className="max-w-md mx-auto mt-4 px-4 relative">
                     {selectedCity && (
@@ -452,13 +455,16 @@
                                                         <span className="text-[10px] bg-pink-100 text-pink-500 px-1.5 py-0.5 rounded font-bold">HOT</span>
                                                         <span className="font-medium text-gray-700">{item.name}</span>
                                                     </div>
-                                                    <span className="text-xs font-bold text-gray-500">약 {item.price.toLocaleString()}원</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-xs font-bold text-gray-500">약 {item.price.toLocaleString()}원</span>
+                                                        <button onClick={() => openMap(item.name)} className="text-gray-400 hover:text-blue-500"><MapPin className="w-4 h-4" /></button>
+                                                    </div>
                                                 </li>
                                             ))}
                                         </ul>
                                     </div>
-                                    <div><h4 className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-3 border-b pb-2"><Coffee className="w-4 h-4 text-brown-500" /> 인기 카페</h4><ul className="space-y-2">{getCityRecommendations(selectedCity.name, selectedCity).cafes.map((item, idx) => (<li key={idx} className="text-sm text-gray-600 bg-gray-50 p-2 rounded-lg flex items-center gap-2"><span className="text-xs bg-orange-100 text-orange-500 px-1.5 rounded">☕</span> {item}</li>))}</ul></div>
-                                    <div><h4 className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-3 border-b pb-2"><Camera className="w-4 h-4 text-blue-500" /> 가볼만한 곳</h4><ul className="space-y-2">{getCityRecommendations(selectedCity.name, selectedCity).spots.map((item, idx) => (<li key={idx} className="text-sm text-gray-600 bg-gray-50 p-2 rounded-lg flex items-center gap-2"><span className="text-xs bg-blue-100 text-blue-500 px-1.5 rounded">📍</span> {item}</li>))}</ul></div>
+                                    <div><h4 className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-3 border-b pb-2"><Coffee className="w-4 h-4 text-brown-500" /> 인기 카페</h4><ul className="space-y-2">{getCityRecommendations(selectedCity.name, selectedCity).cafes.map((item, idx) => (<li key={idx} className="flex justify-between items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg"><div className="flex items-center gap-2"><span className="text-xs bg-orange-100 text-orange-500 px-1.5 rounded">☕</span> {item}</div><button onClick={() => openMap(item)} className="text-gray-400 hover:text-blue-500"><MapPin className="w-4 h-4" /></button></li>))}</ul></div>
+                                    <div><h4 className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-3 border-b pb-2"><Camera className="w-4 h-4 text-blue-500" /> 가볼만한 곳</h4><ul className="space-y-2">{getCityRecommendations(selectedCity.name, selectedCity).spots.map((item, idx) => (<li key={idx} className="flex justify-between items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg"><div className="flex items-center gap-2"><span className="text-xs bg-blue-100 text-blue-500 px-1.5 rounded">📍</span> {item}</div><button onClick={() => openMap(item)} className="text-gray-400 hover:text-blue-500"><MapPin className="w-4 h-4" /></button></li>))}</ul></div>
                                 </div>
                                 <button onClick={() => setSelectedCity(null)} className="w-full mt-6 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition">닫기</button>
                             </div>
@@ -552,54 +558,12 @@
             );
         }
 
-        // 🆕 리뷰 게시판 - 별점 기능 & UI 개선
         function ReviewBoard({ userPoints, setUserPoints, user, openLogin }) {
-             const [reviews, setReviews] = useState(() => {
-                 try {
-                     const saved = localStorage.getItem('yeoja_reviews');
-                     const parsed = saved ? JSON.parse(saved) : [];
-                     return parsed.map(r => ({...r, rating: r.rating || 5, date: r.date || new Date().toLocaleDateString()}));
-                 } catch (e) { return [{id:1, user:'여행조아', content:'추천해요!', city:'발리', rating: 5, date:'2023.10.01'}]; }
-             });
+             const [reviews, setReviews] = useState(() => { const s = localStorage.getItem('yeoja_reviews'); return s ? JSON.parse(s) : [{id:1, user:'여행조아', content:'추천해요!', city:'발리'}]; });
              const [text, setText] = useState('');
-             const [rating, setRating] = useState(5);
-             const [isAllReviewsOpen, setIsAllReviewsOpen] = useState(false);
-             const [editingId, setEditingId] = useState(null);
-             const [editForm, setEditForm] = useState({ text: '', rating: 5 });
-
              useEffect(() => localStorage.setItem('yeoja_reviews', JSON.stringify(reviews)), [reviews]);
-             const handleSubmit = (e) => { e.preventDefault(); if(!user) return openLogin(); if(!text.trim()) return; setReviews([{id:Date.now(), user:user.name, content:text, city:'여행중', rating, date:new Date().toLocaleDateString()}, ...reviews]); setText(''); setRating(5); setUserPoints(p=>p+300); alert('300P 적립! (페이백 포인트)'); };
-             const handleDelete = (id) => { if(confirm("삭제할까요?")) setReviews(reviews.filter(r=>r.id!==id)); };
-             const startEdit = (r) => { setEditingId(r.id); setEditForm({text:r.content, rating:r.rating}); };
-             const saveEdit = (id) => { setReviews(reviews.map(r=>r.id===id ? {...r, content:editForm.text, rating:editForm.rating} : r)); setEditingId(null); };
-
-             return (
-                <div className="bg-white rounded-[24px] border border-[#F0E6D8] p-5 h-[500px] flex flex-col relative">
-                    {isAllReviewsOpen && (
-                        <div className="absolute inset-0 z-50 bg-white rounded-[24px] p-5 flex flex-col animate-pop">
-                            <div className="flex justify-between items-center mb-4 border-b pb-2"><h3 className="font-bold text-lg">전체 리뷰 ({reviews.length})</h3><button onClick={() => setIsAllReviewsOpen(false)}><X className="w-5 h-5 text-gray-400" /></button></div>
-                            <div className="flex-1 overflow-y-auto space-y-3 scrollbar-hide">{reviews.map(r => <div key={r.id} className="bg-[#FAFAFA] p-3 rounded-xl border border-[#EEE]"><div className="flex justify-between items-start mb-1"><div><span className="font-bold text-sm text-gray-700 mr-2">{r.user}</span><span className="text-[10px] text-gray-400">{r.date}</span></div><StarRating score={r.rating} /></div><p className="text-sm text-gray-600">{r.content}</p></div>)}</div>
-                        </div>
-                    )}
-                    <div className="mb-2 font-bold border-b pb-2 flex justify-between items-center"><span className="flex items-center gap-2"><MessageSquare className="w-4 h-4 text-orange-400"/> 노마드 톡</span><span className="text-xs text-gray-400 font-normal">총 {reviews.length}개</span></div>
-                    <div className="flex-1 overflow-y-auto space-y-3 mb-4 scrollbar-hide">
-                        {reviews.slice(0, 5).map(r => (
-                            <div key={r.id} className="bg-[#FAFAFA] p-3 rounded-xl border border-[#EEE] group">
-                                {editingId === r.id ? (
-                                    <div className="space-y-2"><div className="flex justify-between"><StarRating score={editForm.rating} setScore={(s)=>setEditForm({...editForm, rating:s})} editable /><div className="flex gap-1"><button onClick={()=>saveEdit(r.id)} className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded">저장</button><button onClick={()=>setEditingId(null)} className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded">취소</button></div></div><textarea className="w-full p-2 text-sm border rounded-lg" value={editForm.text} onChange={(e)=>setEditForm({...editForm, text:e.target.value})} /></div>
-                                ) : (
-                                    <><div className="flex justify-between items-start mb-1"><div className="flex items-center gap-1"><span className="font-bold text-xs text-gray-700">{r.user}</span><StarRating score={r.rating} /></div>{user && user.name === r.user && (<div className="flex gap-2 opacity-0 group-hover:opacity-100 transition"><Edit className="w-3 h-3 text-gray-400 cursor-pointer hover:text-blue-500" onClick={()=>startEdit(r)} /><Trash className="w-3 h-3 text-gray-400 cursor-pointer hover:text-red-500" onClick={()=>handleDelete(r.id)} /></div>)}</div><p className="text-sm text-gray-600 leading-snug">{r.content}</p></>
-                                )}
-                            </div>
-                        ))}
-                        {reviews.length > 5 && <button onClick={() => setIsAllReviewsOpen(true)} className="w-full text-xs text-gray-400 py-2 hover:text-gray-600">전체 리뷰 보기 ({reviews.length}) 👇</button>}
-                    </div>
-                    <form onSubmit={handleSubmit} className="relative pt-2 border-t border-gray-100">
-                        <div className="flex justify-between items-center mb-2 px-1"><span className="text-xs text-gray-500">별점을 선택하세요</span><StarRating score={rating} setScore={setRating} editable /></div>
-                        <div className="relative"><input value={text} onChange={e=>setText(e.target.value)} className="w-full p-3 pr-10 bg-[#FAFAFA] rounded-xl outline-none text-sm transition focus:bg-white focus:ring-2 focus:ring-orange-100" placeholder={user ? "리뷰를 남겨주세요 (300P)" : "로그인이 필요합니다"} disabled={!user}/><button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-orange-400 hover:scale-110 transition"><Send className="w-4 h-4"/></button></div>
-                    </form>
-                </div>
-            );
+             const handleSubmit = (e) => { e.preventDefault(); if(!user) return openLogin(); if(!text) return; setReviews([{id:Date.now(), user:user.name, content:text, city:'여행중'}, ...reviews]); setText(''); setUserPoints(p => p+300); alert('300P 적립! (페이백 포인트)'); };
+             return <div className="bg-white rounded-[24px] border border-[#F0E6D8] p-5 h-[500px] flex flex-col"><div className="mb-4 font-bold border-b pb-2">💬 노마드 톡</div><div className="text-xs text-gray-500 mb-2">리뷰 쓰고 <span className="text-orange-500 font-bold">포인트(페이백)</span> 받자!</div><div className="flex-1 overflow-y-auto space-y-3 mb-4">{reviews.map(r => <div key={r.id} className="bg-[#FAFAFA] p-3 rounded-xl"><span className="font-bold text-xs">{r.user}</span><p className="text-sm">{r.content}</p></div>)}</div><form onSubmit={handleSubmit} className="relative"><input value={text} onChange={e=>setText(e.target.value)} className="w-full p-3 bg-[#FAFAFA] rounded-xl outline-none" placeholder={user?"리뷰작성":"로그인필요"} disabled={!user}/><button className="absolute right-3 top-3 text-orange-400"><Send className="w-4 h-4"/></button></form></div>;
         }
 
         function AdModal({ onClose, onReward }) {
@@ -637,77 +601,66 @@
             );
         }
 
-        // 🆕 [관리자 대시보드 컴포넌트 추가]
-        function AdminDashboard({ onClose }) {
-            const [users, setUsers] = useState([]);
-            
-            useEffect(() => {
-                const savedUsers = localStorage.getItem('yeoja_users');
-                if (savedUsers) {
-                    setUsers(JSON.parse(savedUsers));
-                }
-            }, []);
+        // 🆕 [마이페이지 모달] - 정보 수정 기능
+        function MyPageModal({ user, onClose, onUpdateUser }) {
+            const [form, setForm] = useState({
+                bank: user.bank || '',
+                account: user.account || '',
+                phone: user.phone || ''
+            });
+
+            const handleSave = () => {
+                const users = JSON.parse(localStorage.getItem('yeoja_users') || '[]');
+                const updatedUsers = users.map(u => u.id === user.id ? { ...u, ...form } : u);
+                localStorage.setItem('yeoja_users', JSON.stringify(updatedUsers));
+                
+                const updatedUser = { ...user, ...form };
+                sessionStorage.setItem('yeoja_current_user', JSON.stringify(updatedUser));
+                onUpdateUser(updatedUser); 
+                alert("정보가 수정되었습니다!");
+                onClose();
+            };
 
             return (
-                <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white w-full max-w-3xl rounded-[2rem] p-6 relative animate-pop max-h-[90vh] overflow-y-auto">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                                <Crown className="w-6 h-6 text-yellow-500" /> 관리자 대시보드
-                            </h2>
-                            <button onClick={onClose} className="bg-gray-100 p-2 rounded-full hover:bg-gray-200">
-                                <X className="w-5 h-5 text-gray-600" />
-                            </button>
-                        </div>
-
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="bg-gray-100 text-gray-600 text-sm">
-                                        <th className="p-3 rounded-tl-xl">이름</th>
-                                        <th className="p-3">아이디</th>
-                                        <th className="p-3">연락처</th>
-                                        <th className="p-3">은행명</th>
-                                        <th className="p-3 rounded-tr-xl">계좌번호</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="text-sm">
-                                    {users.length > 0 ? (
-                                        users.map((u, idx) => (
-                                            <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
-                                                <td className="p-3 font-bold">{u.name}</td>
-                                                <td className="p-3 text-gray-500">{u.id}</td>
-                                                <td className="p-3">{u.phone}</td>
-                                                <td className="p-3 text-blue-600">{u.bank || '-'}</td>
-                                                <td className="p-3 font-mono">{u.account || '-'}</td>
-                                            </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="5" className="p-8 text-center text-gray-400">
-                                                아직 가입한 회원이 없습니다.
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white p-8 rounded-[2rem] w-full max-w-sm soft-shadow animate-pop relative">
+                        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><X className="w-6 h-6" /></button>
+                        <h2 className="text-2xl font-bold text-center mb-6">마이페이지</h2>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs text-gray-500 mb-1 ml-1">이름</label>
+                                <input type="text" className="input-base bg-gray-100 text-gray-500" value={user.name} disabled />
+                            </div>
+                            <div>
+                                <label className="block text-xs text-gray-500 mb-1 ml-1">아이디</label>
+                                <input type="text" className="input-base bg-gray-100 text-gray-500" value={user.id} disabled />
+                            </div>
+                            <div>
+                                <label className="block text-xs text-gray-500 mb-1 ml-1">연락처</label>
+                                <input type="tel" className="input-base" value={form.phone} onChange={(e) => setForm({...form, phone: e.target.value})} />
+                            </div>
+                            <div className="pt-4 border-t border-gray-100">
+                                <p className="text-xs text-orange-500 font-bold mb-2">💰 페이백 계좌 수정</p>
+                                <div className="flex gap-2 mb-2">
+                                    <select className="input-base w-1/3" value={form.bank} onChange={(e) => setForm({...form, bank: e.target.value})}>
+                                        <option value="">은행 선택</option>
+                                        {BANK_LIST.map(bank => <option key={bank} value={bank}>{bank}</option>)}
+                                    </select>
+                                    <input type="text" placeholder="계좌번호" className="input-base flex-1" value={form.account} onChange={(e) => setForm({...form, account: e.target.value})} />
+                                </div>
+                            </div>
+                            <button onClick={handleSave} className="w-full bg-orange-400 text-white py-3 rounded-xl font-bold hover:bg-orange-500 transition shadow-md">저장하기</button>
                         </div>
                     </div>
                 </div>
             );
         }
 
-        // 🆕 [로그인/회원가입 모달 수정] - 계좌 입력 추가
         function LoginModal({ onClose, onLogin, initialView = 'login' }) {
             const [view, setView] = useState(initialView);
             const [loginForm, setLoginForm] = useState({ id: '', password: '' });
-            
-            // 회원가입 폼에 은행/계좌 추가
-            const [signupForm, setSignupForm] = useState({ 
-                name: '', gender: 'female', birth: '', phone: '', email: '', id: '', password: '',
-                bank: '', account: '' 
-            });
-            
+            const [signupForm, setSignupForm] = useState({ name: '', gender: 'female', birth: '', phone: '', email: '', id: '', password: '', bank: '', account: '' });
             const [idCheckStatus, setIdCheckStatus] = useState('none');
             const [nameError, setNameError] = useState('');
 
@@ -733,27 +686,22 @@
                 if (!signupForm.name || !signupForm.id || !signupForm.password || !signupForm.phone) { alert('필수 항목을 모두 입력해주세요.'); return; }
                 if (containsBannedWords(signupForm.name)) { setNameError('🚫 사용할 수 없는 이름(닉네임)입니다.'); return; } else { setNameError(''); }
                 if (idCheckStatus !== 'available') { alert('아이디 중복 확인을 해주세요.'); return; }
-                
                 const registeredUsers = getRegisteredUsers();
                 registeredUsers.push({ ...signupForm });
                 localStorage.setItem('yeoja_users', JSON.stringify(registeredUsers));
-                
                 alert('🎉 회원가입 성공! 환영합니다.');
                 setView('login');
             };
 
             const handleLoginSubmit = () => {
                 if (!loginForm.id || !loginForm.password) { alert('아이디와 비밀번호를 입력해주세요.'); return; }
-                
-                // 관리자 로그인 체크
                 if (loginForm.id === 'admin' && loginForm.password === '1234') {
                     onLogin({ name: '관리자', id: 'admin', isAdmin: true });
                     return;
                 }
-
                 const registeredUsers = getRegisteredUsers();
                 const foundUser = registeredUsers.find(u => u.id === loginForm.id && u.password === loginForm.password);
-                if (foundUser) { onLogin({ name: foundUser.name, id: foundUser.id }); } 
+                if (foundUser) { onLogin(foundUser); } 
                 else { alert('🚫 정보가 일치하지 않습니다.\n(회원가입을 먼저 해주세요!)'); }
             };
 
@@ -780,20 +728,45 @@
                                     <div><label className="block text-xs text-gray-500 mb-1 ml-1">아이디 *</label><div className="flex gap-2"><input type="text" className="input-base flex-1" value={signupForm.id} onChange={(e) => { setSignupForm({...signupForm, id: e.target.value}); setIdCheckStatus('none'); }} /><button onClick={handleIdCheck} className="bg-gray-100 text-gray-600 px-4 rounded-xl text-xs font-bold hover:bg-gray-200 transition whitespace-nowrap">중복확인</button></div>{idCheckStatus === 'available' && <p className="text-green-500 text-xs mt-1 ml-1">사용 가능!</p>}{idCheckStatus === 'duplicate' && <p className="text-red-500 text-xs mt-1 ml-1">이미 있어요!</p>}</div>
                                     <div><label className="block text-xs text-gray-500 mb-1 ml-1">비밀번호 *</label><input type="password" className="input-base" value={signupForm.password} onChange={(e) => setSignupForm({...signupForm, password: e.target.value})} /></div>
                                     <div><label className="block text-xs text-gray-500 mb-1 ml-1">연락처 *</label><input type="tel" className="input-base" value={signupForm.phone} onChange={(e) => setSignupForm({...signupForm, phone: e.target.value})} /></div>
-                                    
-                                    {/* 🆕 계좌 정보 입력 추가 */}
                                     <div className="pt-4 border-t border-gray-100">
                                         <p className="text-xs text-orange-500 font-bold mb-2">💰 페이백 받을 계좌 (선택)</p>
                                         <div className="flex gap-2 mb-2">
-                                            <input type="text" placeholder="은행명" className="input-base w-1/3" value={signupForm.bank} onChange={(e) => setSignupForm({...signupForm, bank: e.target.value})} />
+                                            <select className="input-base w-1/3" value={signupForm.bank} onChange={(e) => setSignupForm({...signupForm, bank: e.target.value})}>
+                                                <option value="">은행 선택</option>
+                                                {BANK_LIST.map(bank => <option key={bank} value={bank}>{bank}</option>)}
+                                            </select>
                                             <input type="text" placeholder="계좌번호 (- 제외)" className="input-base flex-1" value={signupForm.account} onChange={(e) => setSignupForm({...signupForm, account: e.target.value})} />
                                         </div>
                                     </div>
-
                                     <button onClick={handleSignupSubmit} className="w-full bg-orange-400 text-white py-4 rounded-xl text-lg hover:bg-orange-500 transition shadow-md btn-press mt-4 font-bold">가입완료</button>
                                 </div>
                             </div>
                         )}
+                    </div>
+                </div>
+            );
+        }
+        
+        function AdminDashboard({ onClose }) {
+            const [users, setUsers] = useState([]);
+            useEffect(() => {
+                const savedUsers = localStorage.getItem('yeoja_users');
+                if (savedUsers) { setUsers(JSON.parse(savedUsers)); }
+            }, []);
+
+            return (
+                <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white w-full max-w-3xl rounded-[2rem] p-6 relative animate-pop max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2"><Crown className="w-6 h-6 text-yellow-500" /> 관리자 대시보드</h2>
+                            <button onClick={onClose} className="bg-gray-100 p-2 rounded-full hover:bg-gray-200"><X className="w-5 h-5 text-gray-600" /></button>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead><tr className="bg-gray-100 text-gray-600 text-sm"><th className="p-3 rounded-tl-xl">이름</th><th className="p-3">아이디</th><th className="p-3">연락처</th><th className="p-3">은행명</th><th className="p-3 rounded-tr-xl">계좌번호</th></tr></thead>
+                                <tbody className="text-sm">{users.length > 0 ? (users.map((u, idx) => (<tr key={idx} className="border-b border-gray-100 hover:bg-gray-50"><td className="p-3 font-bold">{u.name}</td><td className="p-3 text-gray-500">{u.id}</td><td className="p-3">{u.phone}</td><td className="p-3 text-blue-600">{u.bank || '-'}</td><td className="p-3 font-mono">{u.account || '-'}</td></tr>))) : (<tr><td colSpan="5" className="p-8 text-center text-gray-400">아직 가입한 회원이 없습니다.</td></tr>)}</tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             );
@@ -804,111 +777,47 @@
         // =========================================================================
         function App() {
             const [currentPage, setCurrentPage] = useState('home');
-            
             const [userPoints, setUserPoints] = useState(() => {
-                try {
-                    const saved = localStorage.getItem('yeoja_points');
-                    const parsed = parseInt(saved, 10);
-                    return isNaN(parsed) ? 0 : parsed;
-                } catch (e) {
-                    return 0; 
-                }
+                try { const saved = localStorage.getItem('yeoja_points'); const parsed = parseInt(saved, 10); return isNaN(parsed) ? 0 : parsed; } catch (e) { return 0; }
             });
-
             const [user, setUser] = useState(() => {
-                try {
-                    const sessionUser = sessionStorage.getItem('yeoja_current_user');
-                    return sessionUser ? JSON.parse(sessionUser) : null;
-                } catch (e) {
-                    sessionStorage.removeItem('yeoja_current_user');
-                    return null;
-                }
+                try { const sessionUser = sessionStorage.getItem('yeoja_current_user'); return sessionUser ? JSON.parse(sessionUser) : null; } catch (e) { sessionStorage.removeItem('yeoja_current_user'); return null; }
             });
-
             const [authView, setAuthView] = useState(null); 
             const [isAdModalOpen, setIsAdModalOpen] = useState(false);
-            const [isAdminModalOpen, setIsAdminModalOpen] = useState(false); // 🆕 관리자 모달 상태
+            const [isAdminModalOpen, setIsAdminModalOpen] = useState(false); 
+            const [isMyPageOpen, setIsMyPageOpen] = useState(false); // 🆕 마이페이지 모달 상태
 
-            useEffect(() => {
-                localStorage.setItem('yeoja_points', userPoints);
-            }, [userPoints]);
-
-            const handleLoginSuccess = (userData) => {
-                setUser(userData);
-                sessionStorage.setItem('yeoja_current_user', JSON.stringify(userData));
-                setAuthView(null);
-            };
-
-            const handleLogout = () => {
-                setUser(null);
-                sessionStorage.removeItem('yeoja_current_user');
-            };
+            useEffect(() => { localStorage.setItem('yeoja_points', userPoints); }, [userPoints]);
+            const handleLoginSuccess = (userData) => { setUser(userData); sessionStorage.setItem('yeoja_current_user', JSON.stringify(userData)); setAuthView(null); };
+            const handleLogout = () => { setUser(null); sessionStorage.removeItem('yeoja_current_user'); };
 
             return (
                 <div className="min-h-screen bg-[#F9F5F0] text-[#5A5A5A] font-sans flex flex-col items-center selection:bg-orange-200">
-                    {authView && (
-                        <LoginModal 
-                            initialView={authView}
-                            onClose={() => setAuthView(null)} 
-                            onLogin={handleLoginSuccess} 
-                        />
-                    )}
-
-                    {isAdModalOpen && (
-                        <AdModal 
-                            onClose={() => setIsAdModalOpen(false)}
-                            onReward={() => {
-                                setUserPoints(prev => prev + 300);
-                                setIsAdModalOpen(false);
-                            }}
-                        />
-                    )}
-
-                    {/* 🆕 관리자 대시보드 모달 */}
-                    {isAdminModalOpen && (
-                        <AdminDashboard onClose={() => setIsAdminModalOpen(false)} />
-                    )}
+                    {authView && <LoginModal initialView={authView} onClose={() => setAuthView(null)} onLogin={handleLoginSuccess} />}
+                    {isAdModalOpen && <AdModal onClose={() => setIsAdModalOpen(false)} onReward={() => { setUserPoints(prev => prev + 300); setIsAdModalOpen(false); }} />}
+                    {isAdminModalOpen && <AdminDashboard onClose={() => setIsAdminModalOpen(false)} />}
+                    {/* 🆕 마이페이지 모달 연결 */}
+                    {isMyPageOpen && <MyPageModal user={user} onClose={() => setIsMyPageOpen(false)} onUpdateUser={setUser} />}
 
                     <header className="w-full max-w-6xl px-6 py-6 flex justify-between items-center sticky top-0 bg-[#F9F5F0]/90 backdrop-blur-sm z-40">
                         <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setCurrentPage('home')}>
-                            <div className="bg-orange-400 text-white p-2.5 rounded-2xl shadow-sm transform group-hover:rotate-12 transition duration-300">
-                                <Plane className="w-6 h-6" />
-                            </div>
+                            <div className="bg-orange-400 text-white p-2.5 rounded-2xl shadow-sm transform group-hover:rotate-12 transition duration-300"><Plane className="w-6 h-6" /></div>
                             <h1 className="text-3xl text-[#4A4A4A] tracking-wider group-hover:text-orange-500 transition">YEOJA</h1>
                         </div>
-                        
                         <div className="flex items-center gap-4">
-                            {/* 관리자 버튼 (관리자일 때만 보임) */}
-                            {user && user.isAdmin && (
-                                <button 
-                                    onClick={() => setIsAdminModalOpen(true)}
-                                    className="flex items-center gap-2 bg-gray-800 text-white px-4 py-2 rounded-full shadow-sm hover:bg-black transition"
-                                >
-                                    <Crown className="w-4 h-4 text-yellow-400" /> 관리자 모드
-                                </button>
-                            )}
-
-                            {user && (
-                                <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-orange-200 shadow-sm">
-                                    <div className="w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center text-white text-xs font-bold">$</div>
-                                    <span className="text-orange-500 font-bold">{userPoints.toLocaleString()} P</span>
-                                </div>
-                            )}
-                            
+                            {user && user.isAdmin && <button onClick={() => setIsAdminModalOpen(true)} className="flex items-center gap-2 bg-gray-800 text-white px-4 py-2 rounded-full shadow-sm hover:bg-black transition"><Crown className="w-4 h-4 text-yellow-400" /> 관리자 모드</button>}
+                            {user && <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-orange-200 shadow-sm"><div className="w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center text-white text-xs font-bold">$</div><span className="text-orange-500 font-bold">{userPoints.toLocaleString()} P</span></div>}
                             {user ? (
                                 <div className="hidden md:flex items-center gap-2 text-sm font-medium text-[#555] bg-white border border-[#E0E0E0] px-4 py-2 rounded-full shadow-sm">
                                     <User className="w-4 h-4 text-orange-400" />
-                                    <span>{user.name}님</span>
+                                    <span onClick={() => setIsMyPageOpen(true)} className="cursor-pointer hover:text-orange-500">{user.name}님</span>
                                     <button onClick={handleLogout} className="text-xs text-[#AAA] ml-2 hover:text-red-400">(로그아웃)</button>
                                 </div>
                             ) : (
                                 <div className="flex gap-2">
-                                    <button onClick={() => setAuthView('login')} className="hidden md:flex items-center gap-2 text-sm font-medium text-[#7A7A7A] bg-white border border-[#E0E0E0] px-4 py-2 rounded-full cursor-pointer hover:bg-orange-50 hover:border-orange-200 hover:text-orange-500 transition shadow-sm">
-                                        <LogIn className="w-4 h-4" />로그인
-                                    </button>
-                                    <button onClick={() => setAuthView('signup')} className="hidden md:flex items-center gap-2 text-sm font-bold text-white bg-orange-400 border border-orange-400 px-4 py-2 rounded-full cursor-pointer hover:bg-orange-500 hover:scale-105 transition shadow-sm">
-                                        <UserPlus className="w-4 h-4" />회원가입
-                                    </button>
+                                    <button onClick={() => setAuthView('login')} className="hidden md:flex items-center gap-2 text-sm font-medium text-[#7A7A7A] bg-white border border-[#E0E0E0] px-4 py-2 rounded-full cursor-pointer hover:bg-orange-50 hover:border-orange-200 hover:text-orange-500 transition shadow-sm"><LogIn className="w-4 h-4" />로그인</button>
+                                    <button onClick={() => setAuthView('signup')} className="hidden md:flex items-center gap-2 text-sm font-bold text-white bg-orange-400 border border-orange-400 px-4 py-2 rounded-full cursor-pointer hover:bg-orange-500 hover:scale-105 transition shadow-sm"><UserPlus className="w-4 h-4" />회원가입</button>
                                 </div>
                             )}
                         </div>
@@ -922,11 +831,7 @@
                         </aside>
 
                         <section className="flex-1 min-h-[600px] bg-white rounded-[24px] border border-[#F0E6D8] p-8 relative soft-shadow">
-                            {currentPage !== 'home' && (
-                                <button onClick={() => setCurrentPage('home')} className="absolute top-6 left-6 flex items-center text-[#999] hover:text-[#555] text-lg transition z-10 font-medium">
-                                    <ArrowLeft className="w-5 h-5 mr-1" /> 돌아가기
-                                </button>
-                            )}
+                            {currentPage !== 'home' && <button onClick={() => setCurrentPage('home')} className="absolute top-6 left-6 flex items-center text-[#999] hover:text-[#555] text-lg transition z-10 font-medium"><ArrowLeft className="w-5 h-5 mr-1" /> 돌아가기</button>}
                             {currentPage === 'home' && <HomeMenu setPage={setCurrentPage} />}
                             {currentPage === 'calc' && <CostCalculator />}
                             {currentPage === 'budget' && <BudgetRecommender />}
@@ -935,17 +840,7 @@
                         </section>
 
                         <aside className="w-full md:w-1/4 flex flex-col gap-4 h-full">
-                            <div 
-                                onClick={() => {
-                                    if (!user) {
-                                        alert("회원만 포인트를 적립할 수 있어요! 로그인 해주세요.");
-                                        setAuthView('login');
-                                        return;
-                                    }
-                                    setIsAdModalOpen(true);
-                                }}
-                                className="bg-gradient-to-r from-orange-400 to-pink-500 text-white p-4 rounded-2xl soft-shadow cursor-pointer hover:scale-105 transition btn-press flex items-center gap-3 relative overflow-hidden"
-                            >
+                            <div onClick={() => { if (!user) { alert("회원만 포인트를 적립할 수 있어요! 로그인 해주세요."); setAuthView('login'); return; } setIsAdModalOpen(true); }} className="bg-gradient-to-r from-orange-400 to-pink-500 text-white p-4 rounded-2xl soft-shadow cursor-pointer hover:scale-105 transition btn-press flex items-center gap-3 relative overflow-hidden">
                                 <div className="bg-white/20 p-2 rounded-full"><PlayCircle className="w-6 h-6 text-white" /></div>
                                 <div><div className="font-bold text-lg">광고 보고 300P</div><div className="text-xs text-orange-100 flex items-center gap-1"><Gift className="w-3 h-3"/> 현금 페이백 적립!</div></div>
                                 <div className="absolute -right-2 -bottom-2 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
