@@ -45,7 +45,9 @@
 
         const { useState, useEffect, useRef, useMemo } = React;
 
-        // --- 아이콘 컴포넌트 ---
+        // =========================================================================
+        // 1. 아이콘 컴포넌트 정의
+        // =========================================================================
         const Icon = ({ name, className, onClick }) => <i onClick={onClick} className={`fa-solid ${name} ${className} icon-wrapper`}></i>;
         const Plane = (p) => <Icon name="fa-plane" {...p} />;
         const Hotel = (p) => <Icon name="fa-hotel" {...p} />;
@@ -82,6 +84,9 @@
         const Crown = (p) => <Icon name="fa-crown" {...p} />;
         const Building = (p) => <Icon name="fa-building-columns" {...p} />;
         const MapPin = (p) => <Icon name="fa-map-pin" {...p} />;
+        const Beer = (p) => <Icon name="fa-beer-mug-empty" {...p} />;
+        const Utensils = (p) => <Icon name="fa-utensils" {...p} />;
+        const Filter = (p) => <Icon name="fa-filter" {...p} />;
 
         const StarRating = ({ score, setScore, editable }) => (
             <div className="flex gap-1">
@@ -103,7 +108,6 @@
             6: { flight: 40000, hostel: 25000, airbnb: 80000, hotel: 150000, food: 15000, coffee: 4500 } 
         };
 
-        // 🆕 [데이터 확장] 실제 유명한 숙소/장소 데이터 (일부 도시)
         const CITY_SPECIFIC_DATA = {
             'busan': {
                 hotels: [
@@ -135,7 +139,7 @@
                 cafes: ['어니언 안국', '블루보틀 성수', '런던베이글뮤지엄', '스타벅스 경동1960'],
                 spots: ['경복궁', 'N서울타워', '더현대 서울', '익선동 한옥거리']
             },
-            'osaka': {
+             'osaka': {
                 hotels: [
                     { name: '콘래드 오사카', type: 'hotel', priceLevel: 'high' },
                     { name: '호텔 한큐 레스파이어', type: 'hotel', priceLevel: 'mid' },
@@ -155,46 +159,6 @@
                 cafes: ['블루보틀 아오야마', '푸글렌 도쿄', '카페 키츠네', '오니버스 커피'],
                 spots: ['시부야 스카이', '팀랩 플래닛', '센소지', '도쿄 디즈니씨']
             },
-            'bangkok': {
-                hotels: [
-                    { name: '만다린 오리엔탈 방콕', type: 'hotel', priceLevel: 'high' },
-                    { name: '이스틴 그랜드 사톤', type: 'hotel', priceLevel: 'mid' },
-                    { name: '아바니 리버사이드', type: 'hotel', priceLevel: 'mid' },
-                    { name: '러브디 방콕 시암', type: 'hostel', priceLevel: 'low' }
-                ],
-                cafes: ['팩토리 커피', '더 커먼스', '애프터 유', '로스트'],
-                spots: ['왓 아룬', '카오산 로드', '아이콘시암', '짜뚜짝 시장']
-            },
-            'danang': {
-                hotels: [
-                    { name: '인터컨티넨탈 다낭', type: 'hotel', priceLevel: 'high' },
-                    { name: '하얏트 리젠시 다낭', type: 'hotel', priceLevel: 'high' },
-                    { name: '살라 다낭 비치 호텔', type: 'hotel', priceLevel: 'mid' },
-                    { name: '더 시크릿 가든 호스텔', type: 'hostel', priceLevel: 'low' }
-                ],
-                cafes: ['콩카페 1호점', '더 하이랜드 커피', '웃티크', '원더러스트'],
-                spots: ['바나힐', '미케비치', '용다리', '오행산']
-            },
-            'paris': {
-                hotels: [
-                    { name: '리츠 파리', type: 'hotel', priceLevel: 'high' },
-                    { name: '풀만 파리 투르 에펠', type: 'hotel', priceLevel: 'high' },
-                    { name: '노보텔 레알', type: 'hotel', priceLevel: 'mid' },
-                    { name: '제너레이터 파리', type: 'hostel', priceLevel: 'low' }
-                ],
-                cafes: ['카페 드 플로르', '안젤리나', '셰익스피어 앤 컴퍼니', '마레 지구 카페'],
-                spots: ['에펠탑', '루브르 박물관', '몽마르뜨 언덕', '베르사유 궁전']
-            },
-            'new_york': {
-                hotels: [
-                    { name: '더 플라자 호텔', type: 'hotel', priceLevel: 'high' },
-                    { name: '1 호텔 브루클린 브릿지', type: 'hotel', priceLevel: 'high' },
-                    { name: '포드 타임스 스퀘어', type: 'hotel', priceLevel: 'mid' },
-                    { name: 'HI NYC 호스텔', type: 'hostel', priceLevel: 'low' }
-                ],
-                cafes: ['데보시온', '블루스톤 레인', '매그놀리아 베이커리', '랄프스 커피'],
-                spots: ['센트럴 파크', '타임스 스퀘어', '자유의 여신상', '탑 오브 더 락']
-            }
         };
 
         const RAW_CITIES = [
@@ -477,16 +441,18 @@
             );
         }
 
-        // 🆕 [업그레이드된 예산 맞춤 추천] - (가능)/(불가능) + 예산별 숙소 추천 로직 적용
+        // 🆕 [업그레이드된 예산 맞춤 추천]
         function BudgetRecommender() {
              const [budget, setBudget] = useState(2000000);
              const [selectedCity, setSelectedCity] = useState(null);
+             const [activeTab, setActiveTab] = useState('basic'); // 'basic' or 'custom'
+             const [customFilters, setCustomFilters] = useState({ category: 'restaurant', vibe: 'hip' });
+             const [customResults, setCustomResults] = useState(null);
 
              // 1. 모든 도시의 예상 비용 계산
              const cityCosts = useMemo(() => {
                  return Object.keys(CITIES_DB).map(key => {
                      const city = CITIES_DB[key];
-                     // 대략 7일 여행 기준 비용 계산
                      const estimatedCost = city.flight + (city.airbnb * 7) + (city.food * 14);
                      return {
                          key,
@@ -497,54 +463,41 @@
                  });
              }, [budget]);
 
-             // 2. (가능)한 순서대로 정렬 + 상위 50개만 표시 (성능 위해)
              const sortedCities = useMemo(() => {
                  return cityCosts.sort((a, b) => {
-                     // 가능(true)이 먼저 오게
-                     if (a.isPossible === b.isPossible) return a.cost - b.cost; // 비용 낮은 순
+                     if (a.isPossible === b.isPossible) return a.cost - b.cost;
                      return a.isPossible ? -1 : 1;
                  }).slice(0, 50);
              }, [cityCosts]);
 
-             // 🆕 도시별/예산별 맞춤 추천 데이터 생성기
              const getCityRecommendations = (cityName, cityData) => {
-                 // 1. 하드코딩된 데이터가 있는지 확인 (ID로 조회)
-                 // 도시 이름이 '제주도 (한국)' 형식이므로 ID를 추출하거나 매핑 필요
-                 // 여기서는 간단히 이름 기반 매핑 시도 (실제로는 ID 기반이 더 안전)
-                 let specificData = null;
-                 
-                 // 이름 매핑 (한글 -> 키)
                  const nameKeyMap = {
                      '부산': 'busan', '제주': 'jeju', '서울': 'seoul', '오사카': 'osaka', '도쿄': 'tokyo',
                      '방콕': 'bangkok', '다낭': 'danang', '파리': 'paris', '뉴욕': 'new_york'
                  };
                  
-                 const cityKeyPart = cityName.split(' ')[0]; // "부산"
+                 const cityKeyPart = cityName.split(' ')[0]; 
                  const cityKey = nameKeyMap[cityKeyPart];
+                 let specificData = null;
                  
                  if (cityKey && CITY_SPECIFIC_DATA[cityKey]) {
                      specificData = CITY_SPECIFIC_DATA[cityKey];
                  }
 
-                 // 2. 숙소 추천 리스트 생성 (예산에 따라 정렬)
                  let hotels = [];
-                 
                  if (specificData) {
-                     // 실제 데이터가 있는 경우
-                     if (budget >= 1500000) { // 예산 넉넉 -> 고급 호텔 우선
+                     if (budget >= 1500000) {
                          hotels = specificData.hotels.sort((a, b) => (a.priceLevel === 'high' ? -1 : 1));
-                     } else { // 예산 부족 -> 저렴한 숙소 우선
+                     } else { 
                          hotels = specificData.hotels.sort((a, b) => (a.priceLevel === 'low' ? -1 : 1));
                      }
                      
-                     // 가격 정보 매핑 (priceLevel -> 실제 가격)
                      hotels = hotels.map(h => ({
                          name: h.name,
                          price: h.priceLevel === 'high' ? cityData.hotel * 1.5 : h.priceLevel === 'mid' ? cityData.hotel : cityData.hostel
                      }));
 
                  } else {
-                     // 데이터가 없는 경우 (가상 데이터 생성) - 랜덤 다양성 추가
                      const name = cityName.split(' (')[0];
                      const randomAdjectives = ['그랜드', '센트럴', '로얄', '시티', '부티크', '가든', '뷰'];
                      const adj = randomAdjectives[Math.floor(Math.random() * randomAdjectives.length)];
@@ -563,7 +516,6 @@
                      }
                  }
 
-                 // 3. 카페/명소 데이터
                  let cafes = [], spots = [];
                  if (specificData) {
                      cafes = specificData.cafes;
@@ -577,18 +529,51 @@
                  return { hotels, cafes, spots };
              };
 
-             // 🆕 아고다 검색 링크 생성 (구체적 호텔명 포함)
+             // 🆕 맞춤 필터 검색 로직
+             const handleCustomSearch = () => {
+                 if (!selectedCity) return;
+                 
+                 const { category, vibe } = customFilters;
+                 const cityName = selectedCity.name.split(' (')[0];
+                 
+                 // 예시 데이터 생성 (실제로는 API 등이 없으므로 검색 링크를 위한 가상 데이터)
+                 let results = [];
+                 
+                 // 카테고리별 아이콘 및 텍스트 매핑
+                 const catMap = { 'restaurant': '맛집', 'bar': '술집', 'cafe': '카페' };
+                 const vibeMap = { 'hip': '힙한', 'quiet': '조용한', 'view': '뷰맛집', 'local': '현지인' };
+                 
+                 const catText = catMap[category];
+                 const vibeText = vibeMap[vibe];
+                 
+                 // 1. 검색어 생성
+                 const query = `${cityName} ${vibeText} ${catText}`;
+                 
+                 // 2. 가상의 결과 리스트 (클릭 시 검색으로 연결)
+                 results = [
+                     { name: `${cityName} ${vibeText} ${catText} TOP 1`, query: query },
+                     { name: `숨겨진 ${vibeText} ${catText}`, query: query + " 추천" },
+                     { name: `현지인이 가는 ${catText}`, query: query + " 로컬" }
+                 ];
+                 
+                 setCustomResults(results);
+             };
+
+
              const openHotelSearch = (hotelName, cityName) => {
-                 const cid = "123456"; // 사장님 CID
-                 // 호텔 이름 + 도시 이름으로 검색 정확도 높임
+                 const cid = "123456"; 
                  const query = `${cityName.split(' (')[0]} ${hotelName}`;
                  const url = `https://www.agoda.com/search?cid=${cid}&text=${encodeURIComponent(query)}`;
                  window.open(url, '_blank');
              };
 
-             // 🆕 구글 맵으로 이동하는 함수
              const openMap = (placeName) => {
                  window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(placeName)}`, '_blank');
+             };
+             
+             // 🆕 구글 검색 연결 (맞춤 필터용)
+             const openGoogleSearch = (query) => {
+                 window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
              };
 
              return (
@@ -596,75 +581,154 @@
                     {/* 상세 추천 모달 */}
                     {selectedCity && (
                         <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
-                            <div className="absolute inset-0 bg-black/50 rounded-[24px]" onClick={() => setSelectedCity(null)}></div>
+                            <div className="absolute inset-0 bg-black/50 rounded-[24px]" onClick={() => { setSelectedCity(null); setActiveTab('basic'); setCustomResults(null); }}></div>
                             <div className="bg-white w-full max-w-sm rounded-2xl p-6 relative z-10 shadow-xl animate-pop max-h-[80vh] overflow-y-auto flex flex-col">
                                 <div className="flex justify-between items-center mb-4">
                                     <h3 className="text-xl font-bold text-gray-800">{selectedCity.name}</h3>
-                                    <button onClick={() => setSelectedCity(null)} className="text-gray-400 hover:text-gray-600"><X className="w-6 h-6" /></button>
+                                    <button onClick={() => { setSelectedCity(null); setActiveTab('basic'); setCustomResults(null); }} className="text-gray-400 hover:text-gray-600"><X className="w-6 h-6" /></button>
                                 </div>
-                                <p className="text-xs text-center text-orange-500 mb-6 font-bold">✨ {budget >= 1500000 ? '럭셔리하게 즐기는' : '가성비 좋게 즐기는'} 추천 핫플</p>
                                 
-                                <div className="space-y-6 flex-1 overflow-y-auto">
-                                    {/* 숙소 */}
-                                    <div>
-                                        <h4 className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-3 border-b pb-2">
-                                            <Hotel className="w-4 h-4 text-pink-500" /> 추천 숙소 (1박 기준)
-                                        </h4>
-                                        <ul className="space-y-3">
-                                            {getCityRecommendations(selectedCity.name, selectedCity).hotels.map((item, idx) => (
-                                                <li key={idx} 
-                                                    onClick={() => openHotelSearch(item.name, selectedCity.name)}
-                                                    className="flex justify-between items-center text-sm text-gray-600 bg-gray-50 p-3 rounded-lg cursor-pointer hover:bg-pink-50 transition group"
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${idx === 0 ? 'bg-pink-100 text-pink-500' : 'bg-gray-200 text-gray-500'}`}>
-                                                            {idx === 0 ? 'BEST' : idx + 1}
-                                                        </span>
-                                                        <span className="font-medium text-gray-700 group-hover:text-pink-500 group-hover:underline underline-offset-2">{item.name}</span>
-                                                    </div>
-                                                    <span className="text-xs font-bold text-gray-500">약 {item.price.toLocaleString()}원</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                        <p className="text-[10px] text-gray-400 mt-2 text-right">* 클릭하면 최저가 예약 페이지로 이동합니다.</p>
-                                    </div>
-
-                                    {/* 카페 */}
-                                    <div>
-                                        <h4 className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-3 border-b pb-2">
-                                            <Coffee className="w-4 h-4 text-brown-500" /> 인기 카페
-                                        </h4>
-                                        <ul className="space-y-2">
-                                            {getCityRecommendations(selectedCity.name, selectedCity).cafes.map((item, idx) => (
-                                                <li key={idx} className="flex justify-between items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-xs bg-orange-100 text-orange-500 px-1.5 rounded">☕</span> {item}
-                                                    </div>
-                                                    <button onClick={() => openMap(item)} className="text-gray-400 hover:text-blue-500"><MapPin className="w-4 h-4" /></button>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-
-                                    {/* 명소 */}
-                                    <div>
-                                        <h4 className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-3 border-b pb-2">
-                                            <Camera className="w-4 h-4 text-blue-500" /> 가볼만한 곳
-                                        </h4>
-                                        <ul className="space-y-2">
-                                            {getCityRecommendations(selectedCity.name, selectedCity).spots.map((item, idx) => (
-                                                <li key={idx} className="flex justify-between items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-xs bg-blue-100 text-blue-500 px-1.5 rounded">📍</span> {item}
-                                                    </div>
-                                                    <button onClick={() => openMap(item)} className="text-gray-400 hover:text-blue-500"><MapPin className="w-4 h-4" /></button>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
+                                {/* 🆕 탭 메뉴 추가 */}
+                                <div className="flex mb-4 border-b border-gray-200">
+                                    <button 
+                                        className={`flex-1 pb-2 text-sm font-bold ${activeTab === 'basic' ? 'text-orange-500 border-b-2 border-orange-500' : 'text-gray-400'}`}
+                                        onClick={() => setActiveTab('basic')}
+                                    >
+                                        기본 추천
+                                    </button>
+                                    <button 
+                                        className={`flex-1 pb-2 text-sm font-bold ${activeTab === 'custom' ? 'text-orange-500 border-b-2 border-orange-500' : 'text-gray-400'}`}
+                                        onClick={() => setActiveTab('custom')}
+                                    >
+                                        내 맘대로 찾기
+                                    </button>
                                 </div>
 
-                                <button onClick={() => setSelectedCity(null)} className="w-full mt-6 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition">
+                                {activeTab === 'basic' ? (
+                                    <>
+                                        <p className="text-xs text-center text-orange-500 mb-6 font-bold">✨ {budget >= 1500000 ? '럭셔리하게 즐기는' : '가성비 좋게 즐기는'} 추천 핫플</p>
+                                        <div className="space-y-6 flex-1 overflow-y-auto">
+                                            {/* 숙소 */}
+                                            <div>
+                                                <h4 className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-3 border-b pb-2">
+                                                    <Hotel className="w-4 h-4 text-pink-500" /> 추천 숙소 (1박 기준)
+                                                </h4>
+                                                <ul className="space-y-3">
+                                                    {getCityRecommendations(selectedCity.name, selectedCity).hotels.map((item, idx) => (
+                                                        <li key={idx} 
+                                                            onClick={() => openHotelSearch(item.name, selectedCity.name)}
+                                                            className="flex justify-between items-center text-sm text-gray-600 bg-gray-50 p-3 rounded-lg cursor-pointer hover:bg-pink-50 transition group"
+                                                        >
+                                                            <div className="flex items-center gap-2">
+                                                                <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${idx === 0 ? 'bg-pink-100 text-pink-500' : 'bg-gray-200 text-gray-500'}`}>
+                                                                    {idx === 0 ? 'BEST' : idx + 1}
+                                                                </span>
+                                                                <span className="font-medium text-gray-700 group-hover:text-pink-500 group-hover:underline underline-offset-2">{item.name}</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-xs font-bold text-gray-500">약 {item.price.toLocaleString()}원</span>
+                                                                <button onClick={(e) => { e.stopPropagation(); openHotelSearch(item.name, selectedCity.name); }} className="text-gray-400 hover:text-pink-500"><Search className="w-3 h-3" /></button>
+                                                            </div>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                                <p className="text-[10px] text-gray-400 mt-2 text-right">* 클릭하면 최저가 예약 페이지로 이동합니다.</p>
+                                            </div>
+
+                                            {/* 카페 */}
+                                            <div>
+                                                <h4 className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-3 border-b pb-2">
+                                                    <Coffee className="w-4 h-4 text-brown-500" /> 인기 카페
+                                                </h4>
+                                                <ul className="space-y-2">
+                                                    {getCityRecommendations(selectedCity.name, selectedCity).cafes.map((item, idx) => (
+                                                        <li key={idx} className="flex justify-between items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-xs bg-orange-100 text-orange-500 px-1.5 rounded">☕</span> {item}
+                                                            </div>
+                                                            <button onClick={() => openMap(item)} className="text-gray-400 hover:text-blue-500"><MapPin className="w-4 h-4" /></button>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+
+                                            {/* 명소 */}
+                                            <div>
+                                                <h4 className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-3 border-b pb-2">
+                                                    <Camera className="w-4 h-4 text-blue-500" /> 가볼만한 곳
+                                                </h4>
+                                                <ul className="space-y-2">
+                                                    {getCityRecommendations(selectedCity.name, selectedCity).spots.map((item, idx) => (
+                                                        <li key={idx} className="flex justify-between items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-xs bg-blue-100 text-blue-500 px-1.5 rounded">📍</span> {item}
+                                                            </div>
+                                                            <button onClick={() => openMap(item)} className="text-gray-400 hover:text-blue-500"><MapPin className="w-4 h-4" /></button>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    // 🆕 [내 맘대로 찾기] 탭 내용
+                                    <div className="flex flex-col h-full">
+                                        <div className="space-y-4 mb-6">
+                                            <div>
+                                                <label className="block text-xs font-bold text-gray-500 mb-2">어떤 곳을 찾으세요?</label>
+                                                <div className="flex gap-2">
+                                                    {[{id:'restaurant', icon:<Utensils className="w-4 h-4"/>, label:'맛집'}, {id:'bar', icon:<Beer className="w-4 h-4"/>, label:'술집'}, {id:'cafe', icon:<Coffee className="w-4 h-4"/>, label:'카페'}].map(type => (
+                                                        <button 
+                                                            key={type.id}
+                                                            onClick={() => setCustomFilters({...customFilters, category: type.id})}
+                                                            className={`flex-1 py-2 rounded-xl border text-sm flex items-center justify-center gap-1 transition ${customFilters.category === type.id ? 'bg-orange-50 border-orange-400 text-orange-600 font-bold' : 'bg-white border-gray-200 text-gray-500'}`}
+                                                        >
+                                                            {type.icon} {type.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-bold text-gray-500 mb-2">어떤 분위기?</label>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {[{id:'hip', label:'🔥 힙한'}, {id:'quiet', label:'🤫 조용한'}, {id:'view', label:'🌅 뷰맛집'}, {id:'local', label:'🤠 현지인'}].map(vibe => (
+                                                        <button 
+                                                            key={vibe.id}
+                                                            onClick={() => setCustomFilters({...customFilters, vibe: vibe.id})}
+                                                            className={`py-2 rounded-xl border text-sm transition ${customFilters.vibe === vibe.id ? 'bg-orange-50 border-orange-400 text-orange-600 font-bold' : 'bg-white border-gray-200 text-gray-500'}`}
+                                                        >
+                                                            {vibe.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <button onClick={handleCustomSearch} className="w-full bg-gray-800 text-white py-3 rounded-xl font-bold hover:bg-black transition shadow-md">
+                                                추천 장소 검색하기 🔎
+                                            </button>
+                                        </div>
+                                        
+                                        {/* 검색 결과 */}
+                                        {customResults && (
+                                            <div className="flex-1 overflow-y-auto border-t pt-4">
+                                                <p className="text-xs text-gray-400 mb-2">검색 결과 (클릭해서 자세히 보기)</p>
+                                                <div className="space-y-2">
+                                                    {customResults.map((res, idx) => (
+                                                        <div 
+                                                            key={idx} 
+                                                            onClick={() => openGoogleSearch(res.query)}
+                                                            className="bg-white border border-gray-100 p-3 rounded-xl shadow-sm hover:border-orange-200 cursor-pointer flex justify-between items-center group"
+                                                        >
+                                                            <span className="text-sm text-gray-700 group-hover:text-orange-500 font-medium">{res.name}</span>
+                                                            <Search className="w-4 h-4 text-gray-300 group-hover:text-orange-400" />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                <button onClick={() => { setSelectedCity(null); setActiveTab('basic'); setCustomResults(null); }} className="w-full mt-4 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition">
                                     닫기
                                 </button>
                             </div>
@@ -695,7 +759,7 @@
             );
         }
 
-        // 🆕 4. 복구된 성향 테스트 컴포넌트
+        // ... (나머지 컴포넌트들: MbtiAnalyzer, RealTimeSearch, ReviewBoard, AdModal, LoginModal, App 등은 기존과 동일하게 유지) ...
         function MbtiAnalyzer() {
             const [step, setStep] = useState(0); 
             const [answers, setAnswers] = useState({});
