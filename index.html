@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="agd-partner-manual-verification" /> 
     <title>YEOJA - 여행자 견적 자동화 시스템</title>
     
-    <!-- 1. 테일윈드 CSS (디자인) -->
+    <!-- 1. 테일윈드 CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- 2. 리액트 & 바벨 (실행 엔진) -->
+    <!-- 2. 리액트 & 바벨 -->
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -16,7 +17,7 @@
     <!-- 3. 폰트어썸 아이콘 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- 4. 폰트 (Jua체) -->
+    <!-- 4. 폰트 -->
     <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
 
     <style>
@@ -29,24 +30,26 @@
         .input-base { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #EEE; background-color: #FAFAFA; font-size: 14px; outline: none; transition: all 0.2s; }
         .input-base:focus { border-color: #FB923C; background-color: #FFF; }
         .icon-wrapper { display: inline-flex; align-items: center; justify-content: center; }
-        
-        /* 랭킹 바 애니메이션 */
-        .rank-bar { transition: width 1s ease-out; }
     </style>
 </head>
 <body class="bg-[#F9F5F0]">
     <div id="root"></div>
 
     <script type="text/babel">
+        // 🚑 오류 방지용 안전 장치
+        window.onerror = function(msg, url, line) {
+            console.error("오류 발생:", msg);
+            return false;
+        };
+
         const { useState, useEffect, useRef, useMemo } = React;
 
         // =========================================================================
-        // 🛠️ [아이콘 복구 키트]
+        // 1. 아이콘 컴포넌트 정의
         // =========================================================================
         const Icon = ({ name, className }) => <i className={`fa-solid ${name} ${className} icon-wrapper`}></i>;
         const Plane = (p) => <Icon name="fa-plane" {...p} />;
         const Hotel = (p) => <Icon name="fa-hotel" {...p} />;
-        const MapIcon = (p) => <Icon name="fa-map-location-dot" {...p} />;
         const Coffee = (p) => <Icon name="fa-mug-hot" {...p} />;
         const Calculator = (p) => <Icon name="fa-calculator" {...p} />;
         const Search = (p) => <Icon name="fa-magnifying-glass" {...p} />;
@@ -74,11 +77,10 @@
         const PlayCircle = (p) => <Icon name="fa-circle-play" {...p} />;
         const Gift = (p) => <Icon name="fa-gift" {...p} />;
         const Trophy = (p) => <Icon name="fa-trophy" {...p} />;
-        const Utensils = (p) => <Icon name="fa-utensils" {...p} />;
         const Camera = (p) => <Icon name="fa-camera" {...p} />;
 
         // =========================================================================
-        // 🌍 [데이터 확장 팩] 전 세계 300개 도시 자동 생성기
+        // 2. 데이터 상수 정의
         // =========================================================================
         const PRICE_TIERS = {
             1: { flight: 350000, hostel: 8000, airbnb: 30000, hotel: 60000, food: 5000, coffee: 2000 },
@@ -230,147 +232,119 @@
             },
         };
 
-        function App() {
-            const [currentPage, setCurrentPage] = useState('home');
-            const [userPoints, setUserPoints] = useState(() => {
-                const saved = localStorage.getItem('yeoja_points');
-                return saved ? parseInt(saved, 10) : 0;
-            });
-            const [authView, setAuthView] = useState(null); 
-            const [isAdModalOpen, setIsAdModalOpen] = useState(false);
-            const [user, setUser] = useState(() => {
-                const sessionUser = sessionStorage.getItem('yeoja_current_user');
-                return sessionUser ? JSON.parse(sessionUser) : null;
-            });
+        // =========================================================================
+        // 3. 하위 컴포넌트 정의
+        // =========================================================================
 
-            useEffect(() => {
-                localStorage.setItem('yeoja_points', userPoints);
-            }, [userPoints]);
-
-            const handleLoginSuccess = (userData) => {
-                setUser(userData);
-                sessionStorage.setItem('yeoja_current_user', JSON.stringify(userData));
-                setAuthView(null);
-            };
-
-            const handleLogout = () => {
-                setUser(null);
-                sessionStorage.removeItem('yeoja_current_user');
-            };
-
+        function RankingBox({ icon, title, data }) {
             return (
-                <div className="min-h-screen bg-[#F9F5F0] text-[#5A5A5A] font-sans flex flex-col items-center selection:bg-orange-200">
-                    {authView && (
-                        <LoginModal 
-                            initialView={authView}
-                            onClose={() => setAuthView(null)} 
-                            onLogin={handleLoginSuccess} 
-                        />
-                    )}
-
-                    {isAdModalOpen && (
-                        <AdModal 
-                            onClose={() => setIsAdModalOpen(false)}
-                            onReward={() => {
-                                setUserPoints(prev => prev + 300);
-                                setIsAdModalOpen(false);
-                            }}
-                        />
-                    )}
-
-                    <header className="w-full max-w-6xl px-6 py-6 flex justify-between items-center sticky top-0 bg-[#F9F5F0]/90 backdrop-blur-sm z-40">
-                        <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setCurrentPage('home')}>
-                            <div className="bg-orange-400 text-white p-2.5 rounded-2xl shadow-sm transform group-hover:rotate-12 transition duration-300">
-                                <Plane className="w-6 h-6" />
-                            </div>
-                            <h1 className="text-3xl text-[#4A4A4A] tracking-wider group-hover:text-orange-500 transition">YEOJA</h1>
-                        </div>
-                        
-                        <div className="flex items-center gap-4">
-                            {user && (
-                                <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-orange-200 shadow-sm">
-                                    <div className="w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center text-white text-xs font-bold">$</div>
-                                    <span className="text-orange-500 font-bold">{userPoints.toLocaleString()} P</span>
-                                </div>
-                            )}
-                            
-                            {user ? (
-                                <div className="hidden md:flex items-center gap-2 text-sm font-medium text-[#555] bg-white border border-[#E0E0E0] px-4 py-2 rounded-full shadow-sm">
-                                    <User className="w-4 h-4 text-orange-400" />
-                                    <span>{user.name}님</span>
-                                    <button onClick={handleLogout} className="text-xs text-[#AAA] ml-2 hover:text-red-400">(로그아웃)</button>
-                                </div>
-                            ) : (
-                                <div className="flex gap-2">
-                                    <button onClick={() => setAuthView('login')} className="hidden md:flex items-center gap-2 text-sm font-medium text-[#7A7A7A] bg-white border border-[#E0E0E0] px-4 py-2 rounded-full cursor-pointer hover:bg-orange-50 hover:border-orange-200 hover:text-orange-500 transition shadow-sm">
-                                        <LogIn className="w-4 h-4" />로그인
-                                    </button>
-                                    <button onClick={() => setAuthView('signup')} className="hidden md:flex items-center gap-2 text-sm font-bold text-white bg-orange-400 border border-orange-400 px-4 py-2 rounded-full cursor-pointer hover:bg-orange-500 hover:scale-105 transition shadow-sm">
-                                        <UserPlus className="w-4 h-4" />회원가입
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </header>
-
-                    <main className="w-full max-w-6xl flex-1 flex flex-col md:flex-row gap-6 p-4">
-                        <aside className="w-full md:w-1/4 space-y-4">
-                            <RankingBox icon={<Smile className="w-5 h-5 text-orange-400" />} title="가족 여행 인기 TOP" data={WEEKLY_RANKING_DATA.family} />
-                            <RankingBox icon={<Heart className="w-5 h-5 text-rose-400" />} title="커플 여행 인기 TOP" data={WEEKLY_RANKING_DATA.couple} />
-                            <RankingBox icon={<Briefcase className="w-5 h-5 text-blue-400" />} title="나혼자 여행 TOP" data={WEEKLY_RANKING_DATA.solo} />
-                        </aside>
-
-                        <section className="flex-1 min-h-[600px] bg-white rounded-[24px] border border-[#F0E6D8] p-8 relative soft-shadow">
-                            {currentPage !== 'home' && (
-                                <button onClick={() => setCurrentPage('home')} className="absolute top-6 left-6 flex items-center text-[#999] hover:text-[#555] text-lg transition z-10 font-medium">
-                                    <ArrowLeft className="w-5 h-5 mr-1" /> 돌아가기
-                                </button>
-                            )}
-                            {currentPage === 'home' && <HomeMenu setPage={setCurrentPage} />}
-                            {currentPage === 'calc' && <CostCalculator />}
-                            {currentPage === 'budget' && <BudgetRecommender />}
-                            {currentPage === 'mbti' && <MbtiAnalyzer />}
-                            {currentPage === 'search' && <RealTimeSearch />}
-                        </section>
-
-                        <aside className="w-full md:w-1/4 flex flex-col gap-4 h-full">
-                            <div 
-                                onClick={() => {
-                                    if (!user) {
-                                        alert("회원만 포인트를 적립할 수 있어요! 로그인 해주세요.");
-                                        setAuthView('login');
-                                        return;
-                                    }
-                                    setIsAdModalOpen(true);
-                                }}
-                                className="bg-gradient-to-r from-orange-400 to-pink-500 text-white p-4 rounded-2xl soft-shadow cursor-pointer hover:scale-105 transition btn-press flex items-center gap-3 relative overflow-hidden"
-                            >
-                                <div className="bg-white/20 p-2 rounded-full"><PlayCircle className="w-6 h-6 text-white" /></div>
-                                <div><div className="font-bold text-lg">광고 보고 300P</div><div className="text-xs text-orange-100 flex items-center gap-1"><Gift className="w-3 h-3"/> 현금 페이백 적립!</div></div>
-                                <div className="absolute -right-2 -bottom-2 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
-                            </div>
-                            <ReviewBoard userPoints={userPoints} setUserPoints={setUserPoints} user={user} openLogin={() => setAuthView('login')} />
-                        </aside>
-                    </main>
-                    
-                    <footer className="w-full text-center p-8 text-[#CCC] text-sm font-light">© 2025 YEOJA. Your Travel Mate.</footer>
+                <div className="bg-white p-5 rounded-[20px] border border-[#F0E6D8] soft-shadow hover:border-orange-200 transition duration-300">
+                    <h3 className="text-md mb-4 flex items-center gap-2 text-[#555] font-medium border-b border-[#F5F5F5] pb-3">{icon} {title}</h3>
+                    <ol className="space-y-3">
+                        {data.map((item, idx) => (
+                            <li key={idx} className="flex justify-between items-center group cursor-pointer"><div className="flex items-center gap-3"><span className={`flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold text-white ${idx === 0 ? 'bg-orange-400' : 'bg-[#DDD]'}`}>{idx + 1}</span><span className="text-[#666] group-hover:text-orange-500 transition">{item.name}</span></div><span className="text-[10px] text-[#BBB] bg-[#F9F9F9] px-2 py-0.5 rounded-md">{item.tag}</span></li>
+                        ))}
+                    </ol>
                 </div>
             );
         }
 
-        // 🆕 [업그레이드된 예산 맞춤 추천] - 상세 추천 모달 추가
+        function HomeMenu({ setPage }) {
+            const menus = [
+                { id: 'calc', title: '여행 견적 계산기', sub: '얼마나 필요할까?', icon: <Calculator className="w-7 h-7" /> },
+                { id: 'budget', title: '예산 맞춤 여행지', sub: '내 돈으로 어디까지?', icon: <Sparkles className="w-7 h-7" /> },
+                { id: 'mbti', title: '여행 성향 테스트', sub: '나랑 찰떡인 곳은?', icon: <User className="w-7 h-7" /> },
+                { id: 'search', title: '최저가 검색', sub: '특가 줍줍하기', icon: <Search className="w-7 h-7" /> },
+            ];
+            return <div className="flex flex-col gap-4 h-full justify-center px-6"><div className="text-center mb-6"><h2 className="text-2xl text-[#444] mb-2">어디로 떠나시나요? ✈️</h2><p className="text-[#999] font-light">필요한 기능을 선택해보세요</p></div><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{menus.map((menu) => (<button key={menu.id} onClick={() => setPage(menu.id)} className="bg-[#FAFAFA] p-6 rounded-[24px] border border-transparent hover:border-orange-200 hover:bg-orange-50/30 flex flex-col items-center justify-center gap-3 transition-all duration-300 group btn-press"><div className="bg-white p-4 rounded-2xl shadow-sm text-[#888] group-hover:text-orange-500 group-hover:scale-110 transition duration-300">{menu.icon}</div><div className="text-center"><h3 className="text-lg text-[#555] mb-1">{menu.title}</h3><p className="text-xs text-[#AAA]">{menu.sub}</p></div></button>))}</div></div>;
+        }
+
+        function SearchableCitySelect({ value, onChange }) {
+            const [isOpen, setIsOpen] = useState(false);
+            const [searchTerm, setSearchTerm] = useState('');
+            const wrapperRef = useRef(null);
+            
+            const cities = useMemo(() => Object.keys(CITIES_DB).map(key => ({ key, ...CITIES_DB[key] })), []);
+            const filteredCities = cities.filter(city => city.name.toLowerCase().includes(searchTerm.toLowerCase()));
+            const selectedCityName = CITIES_DB[value]?.name || '도시 선택';
+
+            useEffect(() => {
+                function handleClickOutside(event) { if (wrapperRef.current && !wrapperRef.current.contains(event.target)) { setIsOpen(false); } }
+                document.addEventListener("mousedown", handleClickOutside);
+                return () => document.removeEventListener("mousedown", handleClickOutside);
+            }, [wrapperRef]);
+
+            return (
+                <div className="relative" ref={wrapperRef}>
+                    <div onClick={() => setIsOpen(!isOpen)} className="w-full p-3 rounded-xl border border-[#EEE] bg-[#FAFAFA] cursor-pointer flex justify-between items-center hover:border-orange-200 transition">
+                        <span className="text-[#555]">{selectedCityName}</span>
+                        <ChevronRight className={`w-4 h-4 text-[#AAA] transition-transform ${isOpen ? 'rotate-90' : ''}`} />
+                    </div>
+                    {isOpen && (
+                        <div className="absolute z-50 w-full mt-2 bg-white rounded-xl border border-[#F0E6D8] shadow-lg max-h-60 overflow-hidden flex flex-col">
+                            <div className="p-2 border-b border-[#F5F5F5] flex items-center gap-2">
+                                <Search className="w-4 h-4 text-[#AAA]" />
+                                <input type="text" placeholder="도시 검색 (예: 프라하, 다낭)" className="w-full text-sm outline-none text-[#555]" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} autoFocus />
+                            </div>
+                            <div className="overflow-y-auto flex-1">
+                                {filteredCities.length > 0 ? filteredCities.map((city) => (
+                                    <div key={city.key} onClick={() => { onChange(city.key); setIsOpen(false); setSearchTerm(''); }} className={`p-3 text-sm cursor-pointer hover:bg-orange-50 transition ${value === city.key ? 'bg-orange-50 text-orange-500 font-bold' : 'text-[#666]'}`}>
+                                        {city.name}
+                                    </div>
+                                )) : <div className="p-4 text-center text-xs text-[#AAA]">검색 결과가 없어요 🥲</div>}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        function CostCalculator() {
+            const [city, setCity] = useState('bali');
+            const [days, setDays] = useState(30);
+            const [style, setStyle] = useState(1);
+            const [accom, setAccom] = useState('hostel');
+            const [result, setResult] = useState(null);
+            
+            const calculate = () => {
+                const data = CITIES_DB[city];
+                const total = data.flight + (data[accom] * days) + ((data.food * 3 + data.coffee) * days * style) + 10000 * days;
+                setResult({ total, breakdown: { flight: data.flight, stay: data[accom] * days, food: (data.food * 3) * days * style, etc: 10000 * days } });
+            };
+
+            return (
+                <div className="max-w-md mx-auto mt-2">
+                    <h2 className="text-xl mb-6 text-center text-[#555]">🧮 여행 견적 계산기</h2>
+                    {!result ? (
+                        <div className="space-y-6 px-4">
+                            <div className="space-y-2"><label className="text-sm text-[#888]">떠날 도시 (검색 가능!)</label><SearchableCitySelect value={city} onChange={setCity} /></div>
+                            <div className="space-y-2"><label className="text-sm text-[#888]">여행 기간 (일)</label><input type="number" className="w-full p-3 rounded-xl border border-[#EEE] bg-[#FAFAFA] text-center" value={days} onChange={(e) => setDays(Number(e.target.value))} /></div>
+                            <div className="space-y-2"><label className="text-sm text-[#888]">소비 스타일</label><div className="flex gap-2 p-1 bg-[#FAFAFA] rounded-xl border border-[#EEE]">{[ { l: '알뜰하게', v: 0.8 }, { l: '평범하게', v: 1 }, { l: '여유롭게', v: 1.5 } ].map((opt) => ( <button key={opt.l} onClick={() => setStyle(opt.v)} className={`flex-1 py-2 rounded-lg text-sm transition ${style === opt.v ? 'bg-white shadow-sm text-orange-500 font-medium' : 'text-[#AAA]'}`}>{opt.l}</button>))}</div></div>
+                            <div className="space-y-2"><label className="text-sm text-[#888]">숙소 유형</label><select className="w-full p-3 rounded-xl border border-[#EEE] bg-[#FAFAFA]" value={accom} onChange={(e) => setAccom(e.target.value)}><option value="hostel">게스트하우스 (저렴)</option><option value="airbnb">에어비앤비 (감성)</option><option value="hotel">호텔/리조트 (편안)</option></select></div>
+                            <button onClick={calculate} className="w-full bg-[#444] text-white py-4 rounded-xl text-lg hover:bg-[#333] transition shadow-md btn-press mt-4">계산하기</button>
+                        </div>
+                    ) : (
+                        <div className="bg-[#FAFAFA] p-6 rounded-3xl border border-[#EEE] text-center">
+                            <h3 className="text-lg text-[#666]">{CITIES_DB[city].name} {days}일 살기</h3>
+                            <div className="text-3xl text-[#444] mt-2 font-bold">{result.total.toLocaleString()}원</div>
+                            <div className="text-xs text-[#AAA] mb-4">예상 총 비용</div>
+                            <button onClick={() => setResult(null)} className="w-full mt-2 bg-white border border-[#DDD] text-[#666] py-3 rounded-xl hover:bg-[#F5F5F5] transition text-sm">다시 계산하기</button>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
         function BudgetRecommender() {
              const [budget, setBudget] = useState(2000000);
-             const [selectedCity, setSelectedCity] = useState(null); // 선택된 도시 상태
+             const [selectedCity, setSelectedCity] = useState(null);
 
-             // 300개가 넘으므로 최대 20개만 보여주도록 제한 (성능 최적화)
              const recommendations = useMemo(() => {
                  return Object.keys(CITIES_DB)
                     .filter(key => (CITIES_DB[key].flight + CITIES_DB[key].airbnb * 7 + CITIES_DB[key].food * 14) <= budget)
-                    .slice(0, 20); // 20개만 표시
+                    .slice(0, 20);
              }, [budget]);
 
-             // 도시 이름 기반 가상 추천 데이터 생성기
              const getCityRecommendations = (cityName) => {
                  const name = cityName.split(' (')[0];
                  return {
@@ -382,235 +356,98 @@
 
              return (
                 <div className="max-w-md mx-auto mt-4 px-4 relative">
-                    {/* 상세 추천 모달 */}
                     {selectedCity && (
                         <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
                             <div className="absolute inset-0 bg-black/50 rounded-[24px]" onClick={() => setSelectedCity(null)}></div>
                             <div className="bg-white w-full max-w-sm rounded-2xl p-6 relative z-10 shadow-xl animate-pop max-h-[80vh] overflow-y-auto">
-                                <button onClick={() => setSelectedCity(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-                                    <X className="w-5 h-5" />
-                                </button>
+                                <button onClick={() => setSelectedCity(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
                                 <h3 className="text-xl font-bold text-center text-gray-800 mb-1">{selectedCity.name}</h3>
                                 <p className="text-xs text-center text-orange-500 mb-6 font-bold">✨ 이 도시의 추천 핫플</p>
-                                
                                 <div className="space-y-6">
-                                    {/* 숙소 */}
-                                    <div>
-                                        <h4 className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2 border-b pb-1">
-                                            <Hotel className="w-4 h-4 text-pink-500" /> 추천 숙소
-                                        </h4>
-                                        <ul className="space-y-2">
-                                            {getCityRecommendations(selectedCity.name).hotels.map((item, idx) => (
-                                                <li key={idx} className="text-sm text-gray-600 bg-gray-50 p-2 rounded-lg flex items-center gap-2">
-                                                    <span className="text-xs bg-pink-100 text-pink-500 px-1.5 rounded">HOT</span> {item}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-
-                                    {/* 카페 */}
-                                    <div>
-                                        <h4 className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2 border-b pb-1">
-                                            <Coffee className="w-4 h-4 text-brown-500" /> 인기 카페
-                                        </h4>
-                                        <ul className="space-y-2">
-                                            {getCityRecommendations(selectedCity.name).cafes.map((item, idx) => (
-                                                <li key={idx} className="text-sm text-gray-600 bg-gray-50 p-2 rounded-lg flex items-center gap-2">
-                                                    <span className="text-xs bg-orange-100 text-orange-500 px-1.5 rounded">☕</span> {item}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-
-                                    {/* 명소 */}
-                                    <div>
-                                        <h4 className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2 border-b pb-1">
-                                            <Camera className="w-4 h-4 text-blue-500" /> 가볼만한 곳
-                                        </h4>
-                                        <ul className="space-y-2">
-                                            {getCityRecommendations(selectedCity.name).spots.map((item, idx) => (
-                                                <li key={idx} className="text-sm text-gray-600 bg-gray-50 p-2 rounded-lg flex items-center gap-2">
-                                                    <span className="text-xs bg-blue-100 text-blue-500 px-1.5 rounded">📍</span> {item}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
+                                    <div><h4 className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2 border-b pb-1"><Hotel className="w-4 h-4 text-pink-500" /> 추천 숙소</h4><ul className="space-y-2">{getCityRecommendations(selectedCity.name).hotels.map((item, idx) => (<li key={idx} className="text-sm text-gray-600 bg-gray-50 p-2 rounded-lg flex items-center gap-2"><span className="text-xs bg-pink-100 text-pink-500 px-1.5 rounded">HOT</span> {item}</li>))}</ul></div>
+                                    <div><h4 className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2 border-b pb-1"><Coffee className="w-4 h-4 text-brown-500" /> 인기 카페</h4><ul className="space-y-2">{getCityRecommendations(selectedCity.name).cafes.map((item, idx) => (<li key={idx} className="text-sm text-gray-600 bg-gray-50 p-2 rounded-lg flex items-center gap-2"><span className="text-xs bg-orange-100 text-orange-500 px-1.5 rounded">☕</span> {item}</li>))}</ul></div>
+                                    <div><h4 className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2 border-b pb-1"><Camera className="w-4 h-4 text-blue-500" /> 가볼만한 곳</h4><ul className="space-y-2">{getCityRecommendations(selectedCity.name).spots.map((item, idx) => (<li key={idx} className="text-sm text-gray-600 bg-gray-50 p-2 rounded-lg flex items-center gap-2"><span className="text-xs bg-blue-100 text-blue-500 px-1.5 rounded">📍</span> {item}</li>))}</ul></div>
                                 </div>
-
-                                <button onClick={() => setSelectedCity(null)} className="w-full mt-6 bg-gray-100 text-gray-500 py-3 rounded-xl font-bold hover:bg-gray-200 transition">
-                                    닫기
-                                </button>
+                                <button onClick={() => setSelectedCity(null)} className="w-full mt-6 bg-gray-100 text-gray-500 py-3 rounded-xl font-bold hover:bg-gray-200 transition">닫기</button>
                             </div>
                         </div>
                     )}
-
                     <h2 className="text-xl mb-6 text-center text-[#555]">💰 예산 맞춤 추천</h2>
-                    <div className="bg-[#FAFAFA] p-6 rounded-3xl border border-[#EEE] text-center mb-6">
-                        <div className="text-2xl text-orange-500 font-bold mb-4">{budget.toLocaleString()}원</div>
-                        <input type="range" min="500000" max="5000000" step="100000" value={budget} onChange={(e) => setBudget(Number(e.target.value))} className="w-full accent-orange-400 h-2 bg-[#E0E0E0] rounded-lg appearance-none cursor-pointer" />
-                    </div>
-                    
-                    <div className="space-y-3">
-                        {recommendations.map(key => (
-                            <div 
-                                key={key} 
-                                onClick={() => setSelectedCity(CITIES_DB[key])}
-                                className="flex justify-between items-center p-4 bg-white border border-[#EEE] rounded-2xl cursor-pointer hover:border-orange-300 hover:shadow-md transition group"
-                            >
-                                <span className="group-hover:text-orange-500 font-medium transition">{CITIES_DB[key].name}</span>
-                                <span className="text-xs bg-orange-100 text-orange-500 px-3 py-1 rounded-full font-bold">추천 보기 👉</span>
-                            </div>
-                        ))}
-                    </div>
+                    <div className="bg-[#FAFAFA] p-6 rounded-3xl border border-[#EEE] text-center mb-6"><div className="text-2xl text-orange-500 font-bold mb-4">{budget.toLocaleString()}원</div><input type="range" min="500000" max="5000000" step="100000" value={budget} onChange={(e) => setBudget(Number(e.target.value))} className="w-full accent-orange-400 h-2 bg-[#E0E0E0] rounded-lg appearance-none cursor-pointer" /></div>
+                    <div className="space-y-3">{recommendations.map(key => (<div key={key} onClick={() => setSelectedCity(CITIES_DB[key])} className="flex justify-between items-center p-4 bg-white border border-[#EEE] rounded-2xl cursor-pointer hover:border-orange-300 hover:shadow-md transition group"><span className="group-hover:text-orange-500 font-medium transition">{CITIES_DB[key].name}</span><span className="text-xs bg-orange-100 text-orange-500 px-3 py-1 rounded-full font-bold">추천 보기 👉</span></div>))}</div>
                 </div>
             );
         }
 
-        // ... (나머지 AdModal, LoginModal, RealTimeSearch 등 기존 코드 유지) ...
+        function MbtiAnalyzer() {
+            const [step, setStep] = useState(0); 
+            const [answers, setAnswers] = useState({});
+            const startTest = () => setStep(1);
+            const handleAnswer = (val) => { const next = { ...answers, [`q${step}`]: val }; setAnswers(next); if (step < 3) setStep(step + 1); else setStep(4); };
+            const getResult = () => { const { q1, q3 } = answers; if(q1 === 'A' && q3 === 'A') return 'emotional'; return 'foodie'; }; 
+            const handleShare = () => { navigator.clipboard.writeText("여행 세포 테스트 해보세요! https://yeoja.travel").then(() => alert("복사 완료!")); };
+
+            if(step === 0) return <div className="text-center py-10"><div className="text-5xl mb-6">🧠</div><button onClick={startTest} className="w-full bg-orange-400 text-white py-4 rounded-2xl text-lg font-bold">테스트 시작하기</button></div>;
+            if(step <= 3) return <div className="px-2"><div className="text-center mb-8"><span className="bg-orange-100 text-orange-500 px-4 py-1 rounded-full">Q{step}</span></div><div className="space-y-4"><button onClick={() => handleAnswer('A')} className="w-full p-5 bg-[#FAFAFA] border rounded-2xl text-left">A. 선택지 1</button><button onClick={() => handleAnswer('B')} className="w-full p-5 bg-[#FAFAFA] border rounded-2xl text-left">B. 선택지 2</button></div></div>;
+            return <div className="bg-white p-8 rounded-[30px] border border-[#EEE] text-center"><h2 className="text-2xl mb-4">{TRAVEL_TYPES[getResult()].title}</h2><p className="mb-8">{TRAVEL_TYPES[getResult()].desc}</p><button onClick={handleShare} className="w-full bg-orange-400 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2"><Share2 className="w-4 h-4" /> 공유하기</button><button onClick={() => setStep(0)} className="w-full mt-3 bg-gray-100 py-3 rounded-xl">다시하기</button></div>;
+        }
+
         function RealTimeSearch() {
-            // 여기에 사장님의 제휴 파트너스 링크를 넣으시면 됩니다! (CID 변경 필수)
             const AGENCIES = {
                 'agoda': { name: '아고다', color: 'bg-blue-600', hover: 'hover:bg-blue-700' },
                 'skyscanner': { name: '스카이스캐너', color: 'bg-sky-500', hover: 'hover:bg-sky-600' },
                 'trip': { name: '트립닷컴', color: 'bg-blue-800', hover: 'hover:bg-blue-900' },
                 'myrealtrip': { name: '마이리얼트립', color: 'bg-indigo-500', hover: 'hover:bg-indigo-600' }
             };
-
             const [searchTerm, setSearchTerm] = useState('');
             const [selectedCityForAgency, setSelectedCityForAgency] = useState(null);
-            
-            const searchResults = useMemo(() => {
-                if (!searchTerm) return [];
-                return Object.values(CITIES_DB).filter(city => 
-                    city.name.includes(searchTerm)
-                );
-            }, [searchTerm]);
-
-            const handleCityClick = (city) => {
-                setSelectedCityForAgency(city);
-            };
-
-            const closeAgencyModal = () => {
-                setSelectedCityForAgency(null);
-            };
-
-            // 🚀 핵심: 여행사별 맞춤형 검색 URL 생성기
+            const searchResults = useMemo(() => { if (!searchTerm) return []; return Object.values(CITIES_DB).filter(city => city.name.includes(searchTerm)); }, [searchTerm]);
             const handleAgencyClick = (agencyKey) => {
                 if (!selectedCityForAgency) return;
-
-                // 도시 이름에서 괄호 뒤 내용 제거 (예: "발리 (인도네시아)" -> "발리")
                 const query = selectedCityForAgency.name.split(' (')[0]; 
-                const cid = "123456"; // ⚠️ 사장님의 아고다 CID로 꼭 변경하세요!
-
+                const cid = "123456"; 
                 let finalUrl = "";
-
-                if (agencyKey === 'agoda') {
-                    // 아고다: 텍스트 검색 URL 패턴
-                    finalUrl = `https://www.agoda.com/search?cid=${cid}&text=${encodeURIComponent(query)}`;
-                } else if (agencyKey === 'skyscanner') {
-                     // 스카이스캐너: 일반 검색 (항공권 위주라 도착지만 채워줌)
-                     finalUrl = `https://www.skyscanner.co.kr/transport/flights/icn?destination=${encodeURIComponent(query)}`; 
-                } else if (agencyKey === 'trip') {
-                    // 트립닷컴
-                    finalUrl = `https://kr.trip.com/hotels/list?cityname=${encodeURIComponent(query)}`;
-                } else if (agencyKey === 'myrealtrip') {
-                    // 마이리얼트립
-                    finalUrl = `https://www.myrealtrip.com/search?q=${encodeURIComponent(query)}`;
-                }
-
+                if (agencyKey === 'agoda') finalUrl = `https://www.agoda.com/search?cid=${cid}&text=${encodeURIComponent(query)}`;
+                else if (agencyKey === 'skyscanner') finalUrl = `https://www.skyscanner.co.kr/transport/flights/icn?destination=${encodeURIComponent(query)}`; 
+                else if (agencyKey === 'trip') finalUrl = `https://kr.trip.com/hotels/list?cityname=${encodeURIComponent(query)}`;
+                else if (agencyKey === 'myrealtrip') finalUrl = `https://www.myrealtrip.com/search?q=${encodeURIComponent(query)}`;
                 window.open(finalUrl, '_blank');
             };
 
             return (
                 <div className="max-w-md mx-auto mt-2 h-full px-4 relative">
                     <h2 className="text-xl mb-6 text-center text-[#555]">🔥 최저가 검색</h2>
-                    
-                    {/* 여행사 선택 팝업 (모달) */}
                     {selectedCityForAgency && (
                         <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
-                            <div className="absolute inset-0 bg-black/50 rounded-[24px]" onClick={closeAgencyModal}></div>
+                            <div className="absolute inset-0 bg-black/50 rounded-[24px]" onClick={() => setSelectedCityForAgency(null)}></div>
                             <div className="bg-white w-full max-w-sm rounded-2xl p-6 relative z-10 shadow-xl animate-pop">
-                                <button onClick={closeAgencyModal} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-                                    <X className="w-5 h-5" />
-                                </button>
-                                <h3 className="text-lg font-bold text-center text-gray-800 mb-1">{selectedCityForAgency.name}</h3>
-                                <p className="text-xs text-center text-gray-500 mb-6">어디서 가격을 비교해볼까요?</p>
-                                
-                                <div className="space-y-3">
-                                    {Object.entries(AGENCIES).map(([key, agency]) => (
-                                        <button 
-                                            key={key}
-                                            onClick={() => handleAgencyClick(key)}
-                                            className={`w-full py-4 rounded-xl text-white font-bold shadow-md transition flex items-center justify-between px-6 ${agency.color} ${agency.hover}`}
-                                        >
-                                            <span className="flex items-center gap-2">
-                                                <Plane className="w-4 h-4" /> {agency.name}
-                                            </span>
-                                            <ChevronRight className="w-5 h-5 opacity-70" />
-                                        </button>
-                                    ))}
-                                </div>
+                                <button onClick={() => setSelectedCityForAgency(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+                                <h3 className="text-lg font-bold text-center text-gray-800 mb-1">{selectedCityForAgency.name}</h3><p className="text-xs text-center text-gray-500 mb-6">어디서 가격을 비교해볼까요?</p>
+                                <div className="space-y-3">{Object.entries(AGENCIES).map(([key, agency]) => (<button key={key} onClick={() => handleAgencyClick(key)} className={`w-full py-4 rounded-xl text-white font-bold shadow-md transition flex items-center justify-between px-6 ${agency.color} ${agency.hover}`}><span className="flex items-center gap-2"><Plane className="w-4 h-4" /> {agency.name}</span><ChevronRight className="w-5 h-5 opacity-70" /></button>))}</div>
                             </div>
                         </div>
                     )}
-
-                    {/* 검색창 */}
-                    <div className="relative mb-6">
-                        <input 
-                            type="text" 
-                            placeholder="도시 이름을 검색해보세요 (예: 오사카)" 
-                            className="w-full p-4 pl-12 rounded-2xl border border-[#EEE] bg-white shadow-sm outline-none focus:border-orange-400 transition"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    </div>
-
-                    {/* 결과 목록 */}
+                    <div className="relative mb-6"><input type="text" placeholder="도시 이름을 검색해보세요 (예: 오사카)" className="w-full p-4 pl-12 rounded-2xl border border-[#EEE] bg-white shadow-sm outline-none focus:border-orange-400 transition" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} /><Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" /></div>
                     <div className="space-y-4 overflow-y-auto h-[400px] scrollbar-hide pb-10">
-                        {searchTerm ? (
-                            searchResults.length > 0 ? (
-                                searchResults.map((city, idx) => (
-                                    <div key={idx} onClick={() => handleCityClick(city)} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200 transition group">
-                                        <div>
-                                            <span className="text-orange-500 bg-orange-50 px-2 py-0.5 rounded text-xs font-bold mb-1 inline-block">검색결과</span>
-                                            <div className="font-bold text-gray-700 text-lg group-hover:text-orange-500 transition">{city.name}</div>
-                                        </div>
-                                        <button className="bg-gray-100 text-gray-500 px-3 py-2 rounded-xl text-sm font-bold group-hover:bg-orange-500 group-hover:text-white transition">가격 확인 👉</button>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="text-center text-gray-400 py-10">
-                                    <p className="mb-2 text-2xl">🥲</p>
-                                    검색 결과가 없어요.<br/>
-                                    <span className="text-xs">직접 찾아보시겠어요?</span>
-                                    <button onClick={() => handleCityClick({name: '직접 검색'})} className="mt-4 bg-orange-400 text-white px-4 py-2 rounded-xl text-sm font-bold block mx-auto">사이트 바로가기</button>
-                                </div>
-                            )
-                        ) : (
-                            // 검색어 없을 때 기본 목록 (오늘의 추천 특가)
+                        {searchTerm ? (searchResults.length > 0 ? (searchResults.map((city, idx) => (<div key={idx} onClick={() => setSelectedCityForAgency(city)} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200 transition group"><div><span className="text-orange-500 bg-orange-50 px-2 py-0.5 rounded text-xs font-bold mb-1 inline-block">검색결과</span><div className="font-bold text-gray-700 text-lg group-hover:text-orange-500 transition">{city.name}</div></div><button className="bg-gray-100 text-gray-500 px-3 py-2 rounded-xl text-sm font-bold group-hover:bg-orange-500 group-hover:text-white transition">가격 확인 👉</button></div>))) : (<div className="text-center text-gray-400 py-10"><p className="mb-2 text-2xl">🥲</p>검색 결과가 없어요.<br/><span className="text-xs">직접 찾아보시겠어요?</span><button onClick={() => setSelectedCityForAgency({name: '직접 검색'})} className="mt-4 bg-orange-400 text-white px-4 py-2 rounded-xl text-sm font-bold block mx-auto">사이트 바로가기</button></div>)) : (
                             <>
-                                <div className="flex items-center gap-2 mb-2 px-1">
-                                    <Sparkles className="w-4 h-4 text-yellow-500" />
-                                    <span className="text-sm font-bold text-gray-500">오늘의 추천 특가</span>
-                                </div>
-                                <div onClick={() => handleCityClick({name: '후쿠오카'})} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200 transition group">
-                                    <div><span className="text-sky-500 bg-sky-50 px-2 py-0.5 rounded text-xs font-bold">인기</span><div className="font-bold mt-1 group-hover:text-orange-500">인천 ↔ 후쿠오카</div></div>
-                                    <div className="font-bold text-lg text-[#333]">189,000원~</div>
-                                </div>
-                                <div onClick={() => handleCityClick({name: '다낭'})} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200 transition group">
-                                    <div><span className="text-pink-500 bg-pink-50 px-2 py-0.5 rounded text-xs font-bold">특가</span><div className="font-bold mt-1 group-hover:text-orange-500">다낭 5성급 리조트</div></div>
-                                    <div className="font-bold text-lg text-[#333]">120,000원~</div>
-                                </div>
-                                 <div onClick={() => handleCityClick({name: '방콕'})} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200 transition group">
-                                    <div><span className="text-green-500 bg-green-50 px-2 py-0.5 rounded text-xs font-bold">마감임박</span><div className="font-bold mt-1 group-hover:text-orange-500">방콕 자유여행</div></div>
-                                    <div className="font-bold text-lg text-[#333]">320,000원~</div>
-                                </div>
+                                <div className="flex items-center gap-2 mb-2 px-1"><Sparkles className="w-4 h-4 text-yellow-500" /><span className="text-sm font-bold text-gray-500">오늘의 추천 특가</span></div>
+                                <div onClick={() => setSelectedCityForAgency({name: '후쿠오카'})} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200 transition group"><div><span className="text-sky-500 bg-sky-50 px-2 py-0.5 rounded text-xs font-bold">인기</span><div className="font-bold mt-1 group-hover:text-orange-500">인천 ↔ 후쿠오카</div></div><div className="font-bold text-lg text-[#333]">189,000원~</div></div>
+                                <div onClick={() => setSelectedCityForAgency({name: '다낭'})} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200 transition group"><div><span className="text-pink-500 bg-pink-50 px-2 py-0.5 rounded text-xs font-bold">특가</span><div className="font-bold mt-1 group-hover:text-orange-500">다낭 5성급 리조트</div></div><div className="font-bold text-lg text-[#333]">120,000원~</div></div>
+                                <div onClick={() => setSelectedCityForAgency({name: '방콕'})} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200 transition group"><div><span className="text-green-500 bg-green-50 px-2 py-0.5 rounded text-xs font-bold">마감임박</span><div className="font-bold mt-1 group-hover:text-orange-500">방콕 자유여행</div></div><div className="font-bold text-lg text-[#333]">320,000원~</div></div>
                             </>
                         )}
                     </div>
                 </div>
             );
+        }
+
+        function ReviewBoard({ userPoints, setUserPoints, user, openLogin }) {
+             const [reviews, setReviews] = useState(() => { const s = localStorage.getItem('yeoja_reviews'); return s ? JSON.parse(s) : [{id:1, user:'여행조아', content:'추천해요!', city:'발리'}]; });
+             const [text, setText] = useState('');
+             useEffect(() => localStorage.setItem('yeoja_reviews', JSON.stringify(reviews)), [reviews]);
+             const handleSubmit = (e) => { e.preventDefault(); if(!user) return openLogin(); if(!text) return; setReviews([{id:Date.now(), user:user.name, content:text, city:'여행중'}, ...reviews]); setText(''); setUserPoints(p => p+300); alert('300P 적립! (페이백 포인트)'); };
+             return <div className="bg-white rounded-[24px] border border-[#F0E6D8] p-5 h-[500px] flex flex-col"><div className="mb-4 font-bold border-b pb-2">💬 노마드 톡</div><div className="text-xs text-gray-500 mb-2">리뷰 쓰고 <span className="text-orange-500 font-bold">포인트(페이백)</span> 받자!</div><div className="flex-1 overflow-y-auto space-y-3 mb-4">{reviews.map(r => <div key={r.id} className="bg-[#FAFAFA] p-3 rounded-xl"><span className="font-bold text-xs">{r.user}</span><p className="text-sm">{r.content}</p></div>)}</div><form onSubmit={handleSubmit} className="relative"><input value={text} onChange={e=>setText(e.target.value)} className="w-full p-3 bg-[#FAFAFA] rounded-xl outline-none" placeholder={user?"리뷰작성":"로그인필요"} disabled={!user}/><button className="absolute right-3 top-3 text-orange-400"><Send className="w-4 h-4"/></button></form></div>;
         }
 
         function AdModal({ onClose, onReward }) {
@@ -656,7 +493,12 @@
             const [idCheckStatus, setIdCheckStatus] = useState('none');
             const [nameError, setNameError] = useState('');
 
-            const getRegisteredUsers = () => { const users = localStorage.getItem('yeoja_users'); return users ? JSON.parse(users) : []; };
+            const getRegisteredUsers = () => { 
+                try {
+                    const users = localStorage.getItem('yeoja_users'); 
+                    return users ? JSON.parse(users) : []; 
+                } catch(e) { return []; }
+            };
             const containsBannedWords = (text) => BANNED_WORDS.some(word => text.includes(word));
 
             const handleIdCheck = () => {
@@ -719,103 +561,159 @@
             );
         }
 
-        // --- 기타 컴포넌트들 ---
-        function SearchableCitySelect({ value, onChange }) {
-            const [isOpen, setIsOpen] = useState(false);
-            const [searchTerm, setSearchTerm] = useState('');
-            const wrapperRef = useRef(null);
+        // =========================================================================
+        // 4. 메인 앱 컴포넌트
+        // =========================================================================
+        function App() {
+            const [currentPage, setCurrentPage] = useState('home');
             
-            // 데이터 로딩 최적화
-            const cities = useMemo(() => Object.keys(CITIES_DB).map(key => ({ key, ...CITIES_DB[key] })), []);
-            const filteredCities = cities.filter(city => city.name.toLowerCase().includes(searchTerm.toLowerCase()));
-            const selectedCityName = CITIES_DB[value]?.name || '도시 선택';
+            // 🚨 [안전 모드] 데이터 복구 로직 (에러 발생 시 초기화)
+            const [userPoints, setUserPoints] = useState(() => {
+                try {
+                    const saved = localStorage.getItem('yeoja_points');
+                    const parsed = parseInt(saved, 10);
+                    return isNaN(parsed) ? 0 : parsed;
+                } catch (e) {
+                    return 0; 
+                }
+            });
+
+            // 🚨 [안전 모드] 로그인 정보 복구 로직
+            const [user, setUser] = useState(() => {
+                try {
+                    const sessionUser = sessionStorage.getItem('yeoja_current_user');
+                    return sessionUser ? JSON.parse(sessionUser) : null;
+                } catch (e) {
+                    sessionStorage.removeItem('yeoja_current_user');
+                    return null;
+                }
+            });
+
+            const [authView, setAuthView] = useState(null); 
+            const [isAdModalOpen, setIsAdModalOpen] = useState(false);
 
             useEffect(() => {
-                function handleClickOutside(event) { if (wrapperRef.current && !wrapperRef.current.contains(event.target)) { setIsOpen(false); } }
-                document.addEventListener("mousedown", handleClickOutside);
-                return () => document.removeEventListener("mousedown", handleClickOutside);
-            }, [wrapperRef]);
+                localStorage.setItem('yeoja_points', userPoints);
+            }, [userPoints]);
 
-            return (
-                <div className="relative" ref={wrapperRef}>
-                    <div onClick={() => setIsOpen(!isOpen)} className="w-full p-3 rounded-xl border border-[#EEE] bg-[#FAFAFA] cursor-pointer flex justify-between items-center hover:border-orange-200 transition">
-                        <span className="text-[#555]">{selectedCityName}</span>
-                        <ChevronRight className={`w-4 h-4 text-[#AAA] transition-transform ${isOpen ? 'rotate-90' : ''}`} />
-                    </div>
-                    {isOpen && (
-                        <div className="absolute z-50 w-full mt-2 bg-white rounded-xl border border-[#F0E6D8] shadow-lg max-h-60 overflow-hidden flex flex-col">
-                            <div className="p-2 border-b border-[#F5F5F5] flex items-center gap-2">
-                                <Search className="w-4 h-4 text-[#AAA]" />
-                                <input type="text" placeholder="도시 검색 (예: 프라하, 다낭)" className="w-full text-sm outline-none text-[#555]" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} autoFocus />
-                            </div>
-                            <div className="overflow-y-auto flex-1">
-                                {filteredCities.length > 0 ? filteredCities.map((city) => (
-                                    <div key={city.key} onClick={() => { onChange(city.key); setIsOpen(false); setSearchTerm(''); }} className={`p-3 text-sm cursor-pointer hover:bg-orange-50 transition ${value === city.key ? 'bg-orange-50 text-orange-500 font-bold' : 'text-[#666]'}`}>
-                                        {city.name}
-                                    </div>
-                                )) : <div className="p-4 text-center text-xs text-[#AAA]">검색 결과가 없어요 🥲</div>}
-                            </div>
-                        </div>
-                    )}
-                </div>
-            );
-        }
+            const handleLoginSuccess = (userData) => {
+                setUser(userData);
+                sessionStorage.setItem('yeoja_current_user', JSON.stringify(userData));
+                setAuthView(null);
+            };
 
-        function RankingBox({ icon, title, data }) {
-            return (
-                <div className="bg-white p-5 rounded-[20px] border border-[#F0E6D8] soft-shadow hover:border-orange-200 transition duration-300">
-                    <h3 className="text-md mb-4 flex items-center gap-2 text-[#555] font-medium border-b border-[#F5F5F5] pb-3">{icon} {title}</h3>
-                    <ol className="space-y-3">
-                        {data.map((item, idx) => (
-                            <li key={idx} className="flex justify-between items-center group cursor-pointer"><div className="flex items-center gap-3"><span className={`flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold text-white ${idx === 0 ? 'bg-orange-400' : 'bg-[#DDD]'}`}>{idx + 1}</span><span className="text-[#666] group-hover:text-orange-500 transition">{item.name}</span></div><span className="text-[10px] text-[#BBB] bg-[#F9F9F9] px-2 py-0.5 rounded-md">{item.tag}</span></li>
-                        ))}
-                    </ol>
-                </div>
-            );
-        }
-
-        function HomeMenu({ setPage }) {
-            const menus = [
-                { id: 'calc', title: '여행 견적 계산기', sub: '얼마나 필요할까?', icon: <Calculator className="w-7 h-7" /> },
-                { id: 'budget', title: '예산 맞춤 여행지', sub: '내 돈으로 어디까지?', icon: <Sparkles className="w-7 h-7" /> },
-                { id: 'mbti', title: '여행 성향 테스트', sub: '나랑 찰떡인 곳은?', icon: <User className="w-7 h-7" /> },
-                { id: 'search', title: '최저가 검색', sub: '특가 줍줍하기', icon: <Search className="w-7 h-7" /> },
-            ];
-            return <div className="flex flex-col gap-4 h-full justify-center px-6"><div className="text-center mb-6"><h2 className="text-2xl text-[#444] mb-2">어디로 떠나시나요? ✈️</h2><p className="text-[#999] font-light">필요한 기능을 선택해보세요</p></div><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{menus.map((menu) => (<button key={menu.id} onClick={() => setPage(menu.id)} className="bg-[#FAFAFA] p-6 rounded-[24px] border border-transparent hover:border-orange-200 hover:bg-orange-50/30 flex flex-col items-center justify-center gap-3 transition-all duration-300 group btn-press"><div className="bg-white p-4 rounded-2xl shadow-sm text-[#888] group-hover:text-orange-500 group-hover:scale-110 transition duration-300">{menu.icon}</div><div className="text-center"><h3 className="text-lg text-[#555] mb-1">{menu.title}</h3><p className="text-xs text-[#AAA]">{menu.sub}</p></div></button>))}</div></div>;
-        }
-
-        function CostCalculator() {
-            const [city, setCity] = useState('bali');
-            const [days, setDays] = useState(30);
-            const [style, setStyle] = useState(1);
-            const [accom, setAccom] = useState('hostel');
-            const [result, setResult] = useState(null);
-            
-            const calculate = () => {
-                const data = CITIES_DB[city];
-                const total = data.flight + (data[accom] * days) + ((data.food * 3 + data.coffee) * days * style) + 10000 * days;
-                setResult({ total, breakdown: { flight: data.flight, stay: data[accom] * days, food: (data.food * 3) * days * style, etc: 10000 * days } });
+            const handleLogout = () => {
+                setUser(null);
+                sessionStorage.removeItem('yeoja_current_user');
             };
 
             return (
-                <div className="max-w-md mx-auto mt-2">
-                    <h2 className="text-xl mb-6 text-center text-[#555]">🧮 여행 견적 계산기</h2>
-                    {!result ? (
-                        <div className="space-y-6 px-4">
-                            <div className="space-y-2"><label className="text-sm text-[#888]">떠날 도시 (검색 가능!)</label><SearchableCitySelect value={city} onChange={setCity} /></div>
-                            <div className="space-y-2"><label className="text-sm text-[#888]">여행 기간 (일)</label><input type="number" className="w-full p-3 rounded-xl border border-[#EEE] bg-[#FAFAFA] text-center" value={days} onChange={(e) => setDays(Number(e.target.value))} /></div>
-                            <div className="space-y-2"><label className="text-sm text-[#888]">소비 스타일</label><div className="flex gap-2 p-1 bg-[#FAFAFA] rounded-xl border border-[#EEE]">{[ { l: '알뜰하게', v: 0.8 }, { l: '평범하게', v: 1 }, { l: '여유롭게', v: 1.5 } ].map((opt) => ( <button key={opt.l} onClick={() => setStyle(opt.v)} className={`flex-1 py-2 rounded-lg text-sm transition ${style === opt.v ? 'bg-white shadow-sm text-orange-500 font-medium' : 'text-[#AAA]'}`}>{opt.l}</button>))}</div></div>
-                            <div className="space-y-2"><label className="text-sm text-[#888]">숙소 유형</label><select className="w-full p-3 rounded-xl border border-[#EEE] bg-[#FAFAFA]" value={accom} onChange={(e) => setAccom(e.target.value)}><option value="hostel">게스트하우스 (저렴)</option><option value="airbnb">에어비앤비 (감성)</option><option value="hotel">호텔/리조트 (편안)</option></select></div>
-                            <button onClick={calculate} className="w-full bg-[#444] text-white py-4 rounded-xl text-lg hover:bg-[#333] transition shadow-md btn-press mt-4">계산하기</button>
-                        </div>
-                    ) : (
-                        <div className="bg-[#FAFAFA] p-6 rounded-3xl border border-[#EEE] text-center">
-                            <h3 className="text-lg text-[#666]">{CITIES_DB[city].name} {days}일 살기</h3>
-                            <div className="text-3xl text-[#444] mt-2 font-bold">{result.total.toLocaleString()}원</div>
-                            <div className="text-xs text-[#AAA] mb-4">예상 총 비용</div>
-                            <button onClick={() => setResult(null)} className="w-full mt-2 bg-white border border-[#DDD] text-[#666] py-3 rounded-xl hover:bg-[#F5F5F5] transition text-sm">다시 계산하기</button>
-                        </div>
+                <div className="min-h-screen bg-[#F9F5F0] text-[#5A5A5A] font-sans flex flex-col items-center selection:bg-orange-200">
+                    {/* 모달에 현재 보고 싶은 화면(initialView) 전달 */}
+                    {authView && (
+                        <LoginModal 
+                            initialView={authView}
+                            onClose={() => setAuthView(null)} 
+                            onLogin={handleLoginSuccess} 
+                        />
                     )}
+
+                    {isAdModalOpen && (
+                        <AdModal 
+                            onClose={() => setIsAdModalOpen(false)}
+                            onReward={() => {
+                                setUserPoints(prev => prev + 300);
+                                setIsAdModalOpen(false);
+                            }}
+                        />
+                    )}
+
+                    <header className="w-full max-w-6xl px-6 py-6 flex justify-between items-center sticky top-0 bg-[#F9F5F0]/90 backdrop-blur-sm z-40">
+                        <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setCurrentPage('home')}>
+                            <div className="bg-orange-400 text-white p-2.5 rounded-2xl shadow-sm transform group-hover:rotate-12 transition duration-300">
+                                <Plane className="w-6 h-6" />
+                            </div>
+                            <h1 className="text-3xl text-[#4A4A4A] tracking-wider group-hover:text-orange-500 transition">YEOJA</h1>
+                        </div>
+                        
+                        <div className="flex items-center gap-4">
+                            {/* 🆕 수정된 부분: 로그인을 했을 때만 포인트가 보입니다! */}
+                            {user && (
+                                <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-orange-200 shadow-sm">
+                                    <div className="w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center text-white text-xs font-bold">$</div>
+                                    <span className="text-orange-500 font-bold">{userPoints.toLocaleString()} P</span>
+                                </div>
+                            )}
+                            
+                            {user ? (
+                                <div className="hidden md:flex items-center gap-2 text-sm font-medium text-[#555] bg-white border border-[#E0E0E0] px-4 py-2 rounded-full shadow-sm">
+                                    <User className="w-4 h-4 text-orange-400" />
+                                    <span>{user.name}님</span>
+                                    <button onClick={handleLogout} className="text-xs text-[#AAA] ml-2 hover:text-red-400">(로그아웃)</button>
+                                </div>
+                            ) : (
+                                // 🆕 로그인 / 회원가입 버튼 분리
+                                <div className="flex gap-2">
+                                    <button 
+                                        onClick={() => setAuthView('login')}
+                                        className="hidden md:flex items-center gap-2 text-sm font-medium text-[#7A7A7A] bg-white border border-[#E0E0E0] px-4 py-2 rounded-full cursor-pointer hover:bg-orange-50 hover:border-orange-200 hover:text-orange-500 transition shadow-sm"
+                                    >
+                                        <LogIn className="w-4 h-4" />
+                                        로그인
+                                    </button>
+                                    <button 
+                                        onClick={() => setAuthView('signup')}
+                                        className="hidden md:flex items-center gap-2 text-sm font-bold text-white bg-orange-400 border border-orange-400 px-4 py-2 rounded-full cursor-pointer hover:bg-orange-500 hover:scale-105 transition shadow-sm"
+                                    >
+                                        <UserPlus className="w-4 h-4" />
+                                        회원가입
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </header>
+
+                    <main className="w-full max-w-6xl flex-1 flex flex-col md:flex-row gap-6 p-4">
+                        <aside className="w-full md:w-1/4 space-y-4">
+                            <RankingBox icon={<Smile className="w-5 h-5 text-orange-400" />} title="가족 여행 인기 TOP" data={WEEKLY_RANKING_DATA.family} />
+                            <RankingBox icon={<Heart className="w-5 h-5 text-rose-400" />} title="커플 여행 인기 TOP" data={WEEKLY_RANKING_DATA.couple} />
+                            <RankingBox icon={<Briefcase className="w-5 h-5 text-blue-400" />} title="나혼자 여행 TOP" data={WEEKLY_RANKING_DATA.solo} />
+                        </aside>
+
+                        <section className="flex-1 min-h-[600px] bg-white rounded-[24px] border border-[#F0E6D8] p-8 relative soft-shadow">
+                            {currentPage !== 'home' && (
+                                <button onClick={() => setCurrentPage('home')} className="absolute top-6 left-6 flex items-center text-[#999] hover:text-[#555] text-lg transition z-10 font-medium">
+                                    <ArrowLeft className="w-5 h-5 mr-1" /> 돌아가기
+                                </button>
+                            )}
+                            {currentPage === 'home' && <HomeMenu setPage={setCurrentPage} />}
+                            {currentPage === 'calc' && <CostCalculator />}
+                            {currentPage === 'budget' && <BudgetRecommender />}
+                            {currentPage === 'mbti' && <MbtiAnalyzer />}
+                            {currentPage === 'search' && <RealTimeSearch />}
+                        </section>
+
+                        <aside className="w-full md:w-1/4 flex flex-col gap-4 h-full">
+                            <div 
+                                onClick={() => {
+                                    if (!user) {
+                                        alert("회원만 포인트를 적립할 수 있어요! 로그인 해주세요.");
+                                        setAuthView('login');
+                                        return;
+                                    }
+                                    setIsAdModalOpen(true);
+                                }}
+                                className="bg-gradient-to-r from-orange-400 to-pink-500 text-white p-4 rounded-2xl soft-shadow cursor-pointer hover:scale-105 transition btn-press flex items-center gap-3 relative overflow-hidden"
+                            >
+                                <div className="bg-white/20 p-2 rounded-full"><PlayCircle className="w-6 h-6 text-white" /></div>
+                                <div><div className="font-bold text-lg">광고 보고 300P</div><div className="text-xs text-orange-100 flex items-center gap-1"><Gift className="w-3 h-3"/> 현금 페이백 적립!</div></div>
+                                <div className="absolute -right-2 -bottom-2 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
+                            </div>
+                            <ReviewBoard userPoints={userPoints} setUserPoints={setUserPoints} user={user} openLogin={() => setAuthView('login')} />
+                        </aside>
+                    </main>
+                    
+                    <footer className="w-full text-center p-8 text-[#CCC] text-sm font-light">© 2025 YEOJA. Your Travel Mate.</footer>
                 </div>
             );
         }
