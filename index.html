@@ -13,7 +13,7 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- 3. 폰트어썸 아이콘 (가장 안정적인 아이콘 라이브러리) -->
+    <!-- 3. 폰트어썸 아이콘 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- 4. 폰트 (Jua체) -->
@@ -28,8 +28,6 @@
         @keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         .input-base { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #EEE; background-color: #FAFAFA; font-size: 14px; outline: none; transition: all 0.2s; }
         .input-base:focus { border-color: #FB923C; background-color: #FFF; }
-        
-        /* 아이콘 래퍼 스타일 */
         .icon-wrapper { display: inline-flex; align-items: center; justify-content: center; }
     </style>
 </head>
@@ -37,13 +35,12 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+        const { useState, useEffect, useRef, useMemo } = React;
 
         // =========================================================================
-        // 🛠️ [아이콘 복구 키트] 오류 방지를 위해 아이콘을 직접 만들었습니다!
+        // 🛠️ [아이콘 복구 키트]
         // =========================================================================
         const Icon = ({ name, className }) => <i className={`fa-solid ${name} ${className} icon-wrapper`}></i>;
-
         const Plane = (p) => <Icon name="fa-plane" {...p} />;
         const Hotel = (p) => <Icon name="fa-hotel" {...p} />;
         const MapIcon = (p) => <Icon name="fa-map-location-dot" {...p} />;
@@ -68,38 +65,84 @@
         const Share2 = (p) => <Icon name="fa-share-nodes" {...p} />;
         const Copy = (p) => <Icon name="fa-copy" {...p} />;
         const LogIn = (p) => <Icon name="fa-right-to-bracket" {...p} />;
+        const UserPlus = (p) => <Icon name="fa-user-plus" {...p} />;
         const CheckCircle = (p) => <Icon name="fa-circle-check" {...p} />;
         const AlertCircle = (p) => <Icon name="fa-circle-exclamation" {...p} />;
         const PlayCircle = (p) => <Icon name="fa-circle-play" {...p} />;
         const Gift = (p) => <Icon name="fa-gift" {...p} />;
 
         // =========================================================================
-        // 🚫 [클린봇] 금지어 리스트
+        // 🌍 [데이터 확장 팩] 전 세계 300개 도시 자동 생성기
         // =========================================================================
-        const BANNED_WORDS = ['깡패', '바보', '멍청이', '시발', '병신', '개새끼', '지랄', '놈', '년', '죽어', '사기', "느금", "니애미", "느금마", "느금마뒤짐", "니애비", "니엄마", "니엄마뒤짐",
-"병신", "븅신", "ㅂㅅ", "장애인", "지랄", "지럴", "ㅈㄹ", "꺼져",
-"닥쳐", "이새끼", "저새끼", "개새끼", "개새", "새끼", "ㅅㅂ",
-"시발", "씨발", "씨팔", "슈발", "시벌", "시바", "ㅆㅂ",
-"개미친", "미친놈", "미친년", "미친", "또라이", "또라이새끼",
-"정신병자", "싸이코", "사이코", "변태", "쓰레기", "쓰렉",
-"한심", "찐따", "찐", "급식충", "급식", "급식새끼", "잼민이",
-"잼민", "노잼", "핵노잼", "죽어", "뒤져", "뒤짐", "디져",
-"살인", "자살", "죽이기", "테러", "협박",
-"개노답", "노답", "핵노답", "개못함", "뇌없음", "뇌절",
-"혐오", "혐", "역겹", "토나와", "극혐",
-"존나", "졸라", "존나게", "개같네", "개같다", "X같다",
-"fuck", "fucking", "shit", "bitch", "asshole", "bastard",
-"retard", "loser", "trash", "scum", "idiot", "stupid",
-"sex", "porn", "porno", "야동", "포르노", "섹스", "야사",
-"19금", "AV", "야캠", "유두", "가슴", "노출",
-"도박", "불법", "해킹", "핵", "치트", "치팅",
-"사기", "먹튀", "뒷돈", "불법광고", "스팸",
-"운영자죽어", "관리자죽어", "테러함", "칼들고"
-];
+        const PRICE_TIERS = {
+            1: { flight: 350000, hostel: 8000, airbnb: 30000, hotel: 60000, food: 5000, coffee: 2000 },
+            2: { flight: 450000, hostel: 15000, airbnb: 50000, hotel: 100000, food: 10000, coffee: 3000 },
+            3: { flight: 550000, hostel: 35000, airbnb: 90000, hotel: 150000, food: 20000, coffee: 5000 },
+            4: { flight: 1200000, hostel: 60000, airbnb: 150000, hotel: 250000, food: 35000, coffee: 7000 },
+            5: { flight: 1600000, hostel: 100000, airbnb: 250000, hotel: 400000, food: 50000, coffee: 9000 }
+        };
 
-        // =========================================================================
-        // 📢 [사장님 전용 관리 공간] 
-        // =========================================================================
+        const RAW_CITIES = [
+            ['치앙마이 (태국)', 1], ['빠이 (태국)', 1], ['치앙라이 (태국)', 1], ['방콕 (태국)', 2], ['푸켓 (태국)', 2], ['크라비 (태국)', 2], ['코사무이 (태국)', 2], ['파타야 (태국)', 2],
+            ['하노이 (베트남)', 1], ['호치민 (베트남)', 2], ['다낭 (베트남)', 2], ['나트랑 (베트남)', 2], ['푸꾸옥 (베트남)', 2], ['달랏 (베트남)', 1], ['호이안 (베트남)', 2],
+            ['발리 (인도네시아)', 2], ['자카르타 (인도네시아)', 2], ['롬복 (인도네시아)', 2], ['길리 (인도네시아)', 2],
+            ['세부 (필리핀)', 2], ['보라카이 (필리핀)', 2], ['마닐라 (필리핀)', 2], ['보홀 (필리핀)', 2], ['팔라완 (필리핀)', 2],
+            ['비엔티안 (라오스)', 1], ['루앙프라방 (라오스)', 1], ['방비엥 (라오스)', 1],
+            ['프놈펜 (캄보디아)', 1], ['씨엠립 (캄보디아)', 1],
+            ['쿠알라룸푸르 (말레이시아)', 2], ['페낭 (말레이시아)', 2], ['코타키나발루 (말레이시아)', 2],
+            ['싱가포르', 4], 
+            ['타이베이 (대만)', 2], ['가오슝 (대만)', 2], ['타이난 (대만)', 2],
+            ['도쿄 (일본)', 3], ['오사카 (일본)', 3], ['교토 (일본)', 3], ['후쿠오카 (일본)', 3], ['삿포로 (일본)', 3], ['오키나와 (일본)', 3], ['나고야 (일본)', 3], ['고베 (일본)', 3],
+            ['홍콩', 3], ['마카오', 3], ['베이징 (중국)', 3], ['상하이 (중국)', 3], ['칭다오 (중국)', 2],
+            ['뉴델리 (인도)', 1], ['뭄바이 (인도)', 2], ['고아 (인도)', 1], ['자이푸르 (인도)', 1],
+            ['카트만두 (네팔)', 1], ['포카라 (네팔)', 1],
+            ['울란바토르 (몽골)', 2], ['블라디보스토크 (러시아)', 2],
+            ['런던 (영국)', 5], ['에딘버러 (영국)', 4], ['맨체스터 (영국)', 4],
+            ['파리 (프랑스)', 4], ['니스 (프랑스)', 4], ['마르세유 (프랑스)', 4], ['리옹 (프랑스)', 4],
+            ['로마 (이탈리아)', 4], ['밀라노 (이탈리아)', 4], ['베네치아 (이탈리아)', 4], ['피렌체 (이탈리아)', 4], ['나폴리 (이탈리아)', 3],
+            ['바르셀로나 (스페인)', 4], ['마드리드 (스페인)', 3], ['세비야 (스페인)', 3], ['그라나다 (스페인)', 3], ['발렌시아 (스페인)', 3],
+            ['리스본 (포르투갈)', 3], ['포르투 (포르투갈)', 3],
+            ['베를린 (독일)', 4], ['뮌헨 (독일)', 4], ['프랑크푸르트 (독일)', 4], ['함부르크 (독일)', 4],
+            ['암스테르담 (네덜란드)', 4], ['브뤼셀 (벨기에)', 4],
+            ['프라하 (체코)', 3], ['부다페스트 (헝가리)', 3], ['비엔나 (오스트리아)', 4], ['잘츠부르크 (오스트리아)', 4],
+            ['취리히 (스위스)', 5], ['제네바 (스위스)', 5], ['인터라켄 (스위스)', 5],
+            ['크라쿠프 (폴란드)', 2], ['바르샤바 (폴란드)', 2],
+            ['아테네 (그리스)', 3], ['산토리니 (그리스)', 4],
+            ['이스탄불 (튀르키예)', 2], ['카파도키아 (튀르키예)', 2], ['안탈리아 (튀르키예)', 2],
+            ['더블린 (아일랜드)', 4], 
+            ['스톡홀름 (스웨덴)', 4], ['오슬로 (노르웨이)', 5], ['헬싱키 (핀란드)', 4], ['코펜하겐 (덴마크)', 4], ['레이캬비크 (아이슬란드)', 5],
+            ['자그레브 (크로아티아)', 3], ['두브로브니크 (크로아티아)', 4],
+            ['뉴욕 (미국)', 5], ['LA (미국)', 5], ['샌프란시스코 (미국)', 5], ['라스베이거스 (미국)', 5], ['시카고 (미국)', 5], ['보스턴 (미국)', 5], 
+            ['마이애미 (미국)', 5], ['올랜도 (미국)', 4], ['시애틀 (미국)', 5], ['워싱턴DC (미국)', 5], ['호놀룰루 (하와이)', 5], ['괌 (미국)', 4], ['사이판 (미국)', 4],
+            ['토론토 (캐나다)', 4], ['밴쿠버 (캐나다)', 4], ['몬트리올 (캐나다)', 4], ['퀘벡 (캐나다)', 4],
+            ['칸쿤 (멕시코)', 4], ['멕시코시티 (멕시코)', 3],
+            ['리우데자네이루 (브라질)', 3], ['상파울루 (브라질)', 3],
+            ['부에노스아이레스 (아르헨티나)', 3], 
+            ['산티아고 (칠레)', 3], ['리마 (페루)', 2], ['쿠스코 (페루)', 2], ['보고타 (콜롬비아)', 2],
+            ['시드니 (호주)', 4], ['멜버른 (호주)', 4], ['브리즈번 (호주)', 4], ['퍼스 (호주)', 4], ['골드코스트 (호주)', 4],
+            ['오클랜드 (뉴질랜드)', 4], ['퀸스타운 (뉴질랜드)', 4],
+            ['두바이 (UAE)', 5], ['아부다비 (UAE)', 5],
+            ['카이로 (이집트)', 2], ['다합 (이집트)', 1],
+            ['케이프타운 (남아공)', 3], ['요하네스버그 (남아공)', 3],
+            ['몰디브', 5], ['모리셔스', 4], ['세이셸', 5]
+        ];
+
+        const CITIES_DB = RAW_CITIES.reduce((acc, [name, tier]) => {
+            const id = name.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, ''); 
+            const uniqueId = acc[id] ? `${id}_${Math.floor(Math.random()*100)}` : id;
+            acc[uniqueId] = { name: name, ...PRICE_TIERS[tier] };
+            return acc;
+        }, {});
+
+        Object.assign(CITIES_DB, {
+            'jeju': { name: '제주도 (한국)', flight: 100000, hostel: 25000, airbnb: 80000, hotel: 150000, food: 20000, coffee: 5000 },
+            'busan': { name: '부산 (한국)', flight: 50000, hostel: 25000, airbnb: 70000, hotel: 120000, food: 15000, coffee: 4500 },
+            'seoul': { name: '서울 (한국)', flight: 0, hostel: 30000, airbnb: 90000, hotel: 150000, food: 18000, coffee: 5000 },
+            'gangneung': { name: '강릉 (한국)', flight: 30000, hostel: 25000, airbnb: 80000, hotel: 130000, food: 15000, coffee: 5000 },
+        });
+
+        const BANNED_WORDS = ['깡패', '바보', '멍청이', '시발', '병신', '개새끼', '지랄', '놈', '년', '죽어', '사기'];
+
         const WEEKLY_RANKING_DATA = {
             family: [
                 { name: '나트랑 (베트남)', tag: '가족여행 성지' },
@@ -118,26 +161,6 @@
             ]
         };
 
-        const CITIES_DB = {
-            'bali': { name: '발리 (인도네시아)', flight: 650000, hostel: 15000, airbnb: 50000, hotel: 120000, food: 15000, coffee: 4000 },
-            'chiangmai': { name: '치앙마이 (태국)', flight: 450000, hostel: 12000, airbnb: 40000, hotel: 90000, food: 8000, coffee: 3000 },
-            'bangkok': { name: '방콕 (태국)', flight: 400000, hostel: 15000, airbnb: 45000, hotel: 100000, food: 10000, coffee: 3500 },
-            'danang': { name: '다낭 (베트남)', flight: 350000, hostel: 10000, airbnb: 45000, hotel: 100000, food: 7000, coffee: 2500 },
-            'nha_trang': { name: '나트랑 (베트남)', flight: 380000, hostel: 12000, airbnb: 50000, hotel: 110000, food: 8000, coffee: 3000 },
-            'cebu': { name: '세부 (필리핀)', flight: 350000, hostel: 15000, airbnb: 55000, hotel: 130000, food: 10000, coffee: 3500 },
-            'singapore': { name: '싱가포르', flight: 500000, hostel: 45000, airbnb: 120000, hotel: 200000, food: 30000, coffee: 6000 },
-            'tokyo': { name: '도쿄 (일본)', flight: 400000, hostel: 40000, airbnb: 100000, hotel: 150000, food: 25000, coffee: 5000 },
-            'osaka': { name: '오사카 (일본)', flight: 350000, hostel: 35000, airbnb: 90000, hotel: 130000, food: 22000, coffee: 4500 },
-            'fukuoka': { name: '후쿠오카 (일본)', flight: 250000, hostel: 30000, airbnb: 80000, hotel: 110000, food: 20000, coffee: 4000 },
-            'taipei': { name: '타이베이 (대만)', flight: 350000, hostel: 25000, airbnb: 70000, hotel: 120000, food: 15000, coffee: 4000 },
-            'jeju': { name: '제주도 (한국)', flight: 100000, hostel: 25000, airbnb: 80000, hotel: 150000, food: 20000, coffee: 5000 },
-            'paris': { name: '파리 (프랑스)', flight: 1200000, hostel: 60000, airbnb: 150000, hotel: 250000, food: 40000, coffee: 7000 },
-            'london': { name: '런던 (영국)', flight: 1300000, hostel: 70000, airbnb: 180000, hotel: 300000, food: 45000, coffee: 8000 },
-            'barcelona': { name: '바르셀로나 (스페인)', flight: 1100000, hostel: 50000, airbnb: 130000, hotel: 200000, food: 35000, coffee: 5000 },
-            'guam': { name: '괌 (미국)', flight: 500000, hostel: 60000, airbnb: 150000, hotel: 250000, food: 35000, coffee: 6000 },
-            'nyc': { name: '뉴욕 (미국)', flight: 1600000, hostel: 100000, airbnb: 250000, hotel: 400000, food: 50000, coffee: 9000 },
-        };
-
         const TRAVEL_TYPES = {
             'emotional': { title: '감성 충만 여행러 📸', desc: '남는 건 사진뿐! \n인생샷 건지는게 제일 중요해', icon: <Heart className="w-10 h-10 text-rose-400" /> },
             'activity': { title: '에너자이저 액티비티러 🏄‍♂️', desc: '가만히 있으면 몸살 나! \n서핑, 등산, 다이빙 고고!', icon: <Sun className="w-10 h-10 text-amber-500" /> },
@@ -151,10 +174,10 @@
                 const saved = localStorage.getItem('yeoja_points');
                 return saved ? parseInt(saved, 10) : 0;
             });
-            const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+            // 🆕 로그인/회원가입 모달 상태를 통합 관리 (null | 'login' | 'signup')
+            const [authView, setAuthView] = useState(null); 
             const [isAdModalOpen, setIsAdModalOpen] = useState(false);
             const [user, setUser] = useState(() => {
-                // 로그인 상태 유지
                 const sessionUser = sessionStorage.getItem('yeoja_current_user');
                 return sessionUser ? JSON.parse(sessionUser) : null;
             });
@@ -163,11 +186,10 @@
                 localStorage.setItem('yeoja_points', userPoints);
             }, [userPoints]);
 
-            // 로그인 성공 시 처리
             const handleLoginSuccess = (userData) => {
                 setUser(userData);
                 sessionStorage.setItem('yeoja_current_user', JSON.stringify(userData));
-                setIsLoginModalOpen(false);
+                setAuthView(null); // 모달 닫기
             };
 
             const handleLogout = () => {
@@ -177,9 +199,11 @@
 
             return (
                 <div className="min-h-screen bg-[#F9F5F0] text-[#5A5A5A] font-sans flex flex-col items-center selection:bg-orange-200">
-                    {isLoginModalOpen && (
+                    {/* 모달에 현재 보고 싶은 화면(initialView) 전달 */}
+                    {authView && (
                         <LoginModal 
-                            onClose={() => setIsLoginModalOpen(false)} 
+                            initialView={authView}
+                            onClose={() => setAuthView(null)} 
                             onLogin={handleLoginSuccess} 
                         />
                     )}
@@ -215,9 +239,22 @@
                                     <button onClick={handleLogout} className="text-xs text-[#AAA] ml-2 hover:text-red-400">(로그아웃)</button>
                                 </div>
                             ) : (
-                                <div onClick={() => setIsLoginModalOpen(true)} className="hidden md:flex items-center gap-2 text-sm font-medium text-[#7A7A7A] bg-white border border-[#E0E0E0] px-5 py-2 rounded-full cursor-pointer hover:bg-orange-50 hover:border-orange-200 hover:text-orange-500 transition shadow-sm">
-                                    <LogIn className="w-4 h-4" />
-                                    로그인 | 회원가입
+                                // 🆕 로그인 / 회원가입 버튼 분리
+                                <div className="flex gap-2">
+                                    <button 
+                                        onClick={() => setAuthView('login')}
+                                        className="hidden md:flex items-center gap-2 text-sm font-medium text-[#7A7A7A] bg-white border border-[#E0E0E0] px-4 py-2 rounded-full cursor-pointer hover:bg-orange-50 hover:border-orange-200 hover:text-orange-500 transition shadow-sm"
+                                    >
+                                        <LogIn className="w-4 h-4" />
+                                        로그인
+                                    </button>
+                                    <button 
+                                        onClick={() => setAuthView('signup')}
+                                        className="hidden md:flex items-center gap-2 text-sm font-bold text-white bg-orange-400 border border-orange-400 px-4 py-2 rounded-full cursor-pointer hover:bg-orange-500 hover:scale-105 transition shadow-sm"
+                                    >
+                                        <UserPlus className="w-4 h-4" />
+                                        회원가입
+                                    </button>
                                 </div>
                             )}
                         </div>
@@ -249,7 +286,7 @@
                                 <div><div className="font-bold text-lg">광고 보고 300P</div><div className="text-xs text-orange-100 flex items-center gap-1"><Gift className="w-3 h-3"/> 즉시 적립해드려요!</div></div>
                                 <div className="absolute -right-2 -bottom-2 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
                             </div>
-                            <ReviewBoard userPoints={userPoints} setUserPoints={setUserPoints} user={user} openLogin={() => setIsLoginModalOpen(true)} />
+                            <ReviewBoard userPoints={userPoints} setUserPoints={setUserPoints} user={user} openLogin={() => setAuthView('login')} />
                         </aside>
                     </main>
                     
@@ -258,7 +295,6 @@
             );
         }
 
-        // --- 서브 컴포넌트들 ---
         function AdModal({ onClose, onReward }) {
             const [timeLeft, setTimeLeft] = useState(3);
             const [canClose, setCanClose] = useState(false);
@@ -294,8 +330,9 @@
             );
         }
 
-        function LoginModal({ onClose, onLogin }) {
-            const [view, setView] = useState('login');
+        // 🆕 LoginModal이 이제 initialView를 받습니다.
+        function LoginModal({ onClose, onLogin, initialView = 'login' }) {
+            const [view, setView] = useState(initialView);
             const [loginForm, setLoginForm] = useState({ id: '', password: '' });
             const [signupForm, setSignupForm] = useState({ name: '', gender: 'female', birth: '', phone: '', email: '', id: '', password: '' });
             const [idCheckStatus, setIdCheckStatus] = useState('none');
@@ -364,7 +401,6 @@
             );
         }
 
-        // --- 기타 컴포넌트들 ---
         function RankingBox({ icon, title, data }) {
             return (
                 <div className="bg-white p-5 rounded-[20px] border border-[#F0E6D8] soft-shadow hover:border-orange-200 transition duration-300">
@@ -406,15 +442,18 @@
                     <h2 className="text-xl mb-6 text-center text-[#555]">🧮 여행 견적 계산기</h2>
                     {!result ? (
                         <div className="space-y-6 px-4">
-                            <div className="space-y-2"><label className="text-sm text-[#888]">떠날 도시</label><select className="w-full p-3 rounded-xl border border-[#EEE] bg-[#FAFAFA]" value={city} onChange={(e) => setCity(e.target.value)}>{Object.keys(CITIES_DB).map(key => <option key={key} value={key}>{CITIES_DB[key].name}</option>)}</select></div>
+                            <div className="space-y-2"><label className="text-sm text-[#888]">떠날 도시 (검색 가능!)</label><SearchableCitySelect value={city} onChange={setCity} /></div>
                             <div className="space-y-2"><label className="text-sm text-[#888]">여행 기간 (일)</label><input type="number" className="w-full p-3 rounded-xl border border-[#EEE] bg-[#FAFAFA] text-center" value={days} onChange={(e) => setDays(Number(e.target.value))} /></div>
+                            <div className="space-y-2"><label className="text-sm text-[#888]">소비 스타일</label><div className="flex gap-2 p-1 bg-[#FAFAFA] rounded-xl border border-[#EEE]">{[ { l: '알뜰하게', v: 0.8 }, { l: '평범하게', v: 1 }, { l: '여유롭게', v: 1.5 } ].map((opt) => ( <button key={opt.l} onClick={() => setStyle(opt.v)} className={`flex-1 py-2 rounded-lg text-sm transition ${style === opt.v ? 'bg-white shadow-sm text-orange-500 font-medium' : 'text-[#AAA]'}`}>{opt.l}</button>))}</div></div>
+                            <div className="space-y-2"><label className="text-sm text-[#888]">숙소 유형</label><select className="w-full p-3 rounded-xl border border-[#EEE] bg-[#FAFAFA]" value={accom} onChange={(e) => setAccom(e.target.value)}><option value="hostel">게스트하우스 (저렴)</option><option value="airbnb">에어비앤비 (감성)</option><option value="hotel">호텔/리조트 (편안)</option></select></div>
                             <button onClick={calculate} className="w-full bg-[#444] text-white py-4 rounded-xl text-lg hover:bg-[#333] transition shadow-md btn-press mt-4">계산하기</button>
                         </div>
                     ) : (
                         <div className="bg-[#FAFAFA] p-6 rounded-3xl border border-[#EEE] text-center">
                             <h3 className="text-lg text-[#666]">{CITIES_DB[city].name} {days}일 살기</h3>
                             <div className="text-3xl text-[#444] mt-2 font-bold">{result.total.toLocaleString()}원</div>
-                            <button onClick={() => setResult(null)} className="w-full mt-6 bg-white border border-[#DDD] text-[#666] py-3 rounded-xl hover:bg-[#F5F5F5] transition text-sm">다시 계산하기</button>
+                            <div className="text-xs text-[#AAA] mb-4">예상 총 비용</div>
+                            <button onClick={() => setResult(null)} className="w-full mt-2 bg-white border border-[#DDD] text-[#666] py-3 rounded-xl hover:bg-[#F5F5F5] transition text-sm">다시 계산하기</button>
                         </div>
                     )}
                 </div>
@@ -423,7 +462,13 @@
 
         function BudgetRecommender() {
              const [budget, setBudget] = useState(2000000);
-             const recommendations = Object.keys(CITIES_DB).filter(key => (CITIES_DB[key].flight + CITIES_DB[key].airbnb * 7 + CITIES_DB[key].food * 14) <= budget);
+             // 300개가 넘으므로 최대 20개만 보여주도록 제한 (성능 최적화)
+             const recommendations = useMemo(() => {
+                 return Object.keys(CITIES_DB)
+                    .filter(key => (CITIES_DB[key].flight + CITIES_DB[key].airbnb * 7 + CITIES_DB[key].food * 14) <= budget)
+                    .slice(0, 20); // 20개만 표시
+             }, [budget]);
+
              return <div className="max-w-md mx-auto mt-4 px-4"><h2 className="text-xl mb-6 text-center text-[#555]">💰 예산 맞춤 추천</h2><div className="bg-[#FAFAFA] p-6 rounded-3xl border border-[#EEE] text-center mb-6"><div className="text-2xl text-orange-500 font-bold mb-4">{budget.toLocaleString()}원</div><input type="range" min="500000" max="5000000" step="100000" value={budget} onChange={(e) => setBudget(Number(e.target.value))} className="w-full accent-orange-400 h-2 bg-[#E0E0E0] rounded-lg appearance-none cursor-pointer" /></div><div className="space-y-3">{recommendations.map(key => <div key={key} className="flex justify-between p-4 bg-white border border-[#EEE] rounded-2xl"><span>{CITIES_DB[key].name}</span><span className="text-orange-500 font-bold">가능</span></div>)}</div></div>;
         }
 
@@ -441,7 +486,9 @@
         }
 
         function RealTimeSearch() {
-            return <div className="max-w-md mx-auto mt-2 h-full px-4"><h2 className="text-xl mb-6 text-center text-[#555]">🔥 오늘의 특가</h2><div className="space-y-4"><div onClick={() => window.open('https://www.agoda.com', '_blank')} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200"><div><span className="text-sky-500 bg-sky-50 px-2 py-0.5 rounded text-xs">항공</span><div className="font-bold mt-1">인천 ↔ 후쿠오카</div></div><div className="font-bold text-lg">189,000원</div></div></div></div>;
+            // 아고다 검색 링크 (여기에 사장님 CID 넣으시면 됩니다)
+            const AGODA_LINK = 'https://www.agoda.com/partners/partnersearch.aspx?cid=123456'; 
+            return <div className="max-w-md mx-auto mt-2 h-full px-4"><h2 className="text-xl mb-6 text-center text-[#555]">🔥 오늘의 특가</h2><div className="space-y-4"><div onClick={() => window.open(AGODA_LINK, '_blank')} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200"><div><span className="text-sky-500 bg-sky-50 px-2 py-0.5 rounded text-xs">항공</span><div className="font-bold mt-1">인천 ↔ 후쿠오카</div></div><div className="font-bold text-lg">189,000원</div></div></div></div>;
         }
 
         function ReviewBoard({ userPoints, setUserPoints, user, openLogin }) {
@@ -450,6 +497,48 @@
              useEffect(() => localStorage.setItem('yeoja_reviews', JSON.stringify(reviews)), [reviews]);
              const handleSubmit = (e) => { e.preventDefault(); if(!user) return openLogin(); if(!text) return; setReviews([{id:Date.now(), user:user.name, content:text, city:'여행중'}, ...reviews]); setText(''); setUserPoints(p => p+300); alert('300P 적립!'); };
              return <div className="bg-white rounded-[24px] border border-[#F0E6D8] p-5 h-[500px] flex flex-col"><div className="mb-4 font-bold border-b pb-2">💬 노마드 톡</div><div className="flex-1 overflow-y-auto space-y-3 mb-4">{reviews.map(r => <div key={r.id} className="bg-[#FAFAFA] p-3 rounded-xl"><span className="font-bold text-xs">{r.user}</span><p className="text-sm">{r.content}</p></div>)}</div><form onSubmit={handleSubmit} className="relative"><input value={text} onChange={e=>setText(e.target.value)} className="w-full p-3 bg-[#FAFAFA] rounded-xl outline-none" placeholder={user?"리뷰작성":"로그인필요"} disabled={!user}/><button className="absolute right-3 top-3 text-orange-400"><Send className="w-4 h-4"/></button></form></div>;
+        }
+
+        // --- 기타 컴포넌트들 ---
+        function SearchableCitySelect({ value, onChange }) {
+            const [isOpen, setIsOpen] = useState(false);
+            const [searchTerm, setSearchTerm] = useState('');
+            const wrapperRef = useRef(null);
+            
+            // 데이터 로딩 최적화
+            const cities = useMemo(() => Object.keys(CITIES_DB).map(key => ({ key, ...CITIES_DB[key] })), []);
+            const filteredCities = cities.filter(city => city.name.toLowerCase().includes(searchTerm.toLowerCase()));
+            const selectedCityName = CITIES_DB[value]?.name || '도시 선택';
+
+            useEffect(() => {
+                function handleClickOutside(event) { if (wrapperRef.current && !wrapperRef.current.contains(event.target)) { setIsOpen(false); } }
+                document.addEventListener("mousedown", handleClickOutside);
+                return () => document.removeEventListener("mousedown", handleClickOutside);
+            }, [wrapperRef]);
+
+            return (
+                <div className="relative" ref={wrapperRef}>
+                    <div onClick={() => setIsOpen(!isOpen)} className="w-full p-3 rounded-xl border border-[#EEE] bg-[#FAFAFA] cursor-pointer flex justify-between items-center hover:border-orange-200 transition">
+                        <span className="text-[#555]">{selectedCityName}</span>
+                        <ChevronRight className={`w-4 h-4 text-[#AAA] transition-transform ${isOpen ? 'rotate-90' : ''}`} />
+                    </div>
+                    {isOpen && (
+                        <div className="absolute z-50 w-full mt-2 bg-white rounded-xl border border-[#F0E6D8] shadow-lg max-h-60 overflow-hidden flex flex-col">
+                            <div className="p-2 border-b border-[#F5F5F5] flex items-center gap-2">
+                                <Search className="w-4 h-4 text-[#AAA]" />
+                                <input type="text" placeholder="도시 검색 (예: 프라하, 다낭)" className="w-full text-sm outline-none text-[#555]" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} autoFocus />
+                            </div>
+                            <div className="overflow-y-auto flex-1">
+                                {filteredCities.length > 0 ? filteredCities.map((city) => (
+                                    <div key={city.key} onClick={() => { onChange(city.key); setIsOpen(false); setSearchTerm(''); }} className={`p-3 text-sm cursor-pointer hover:bg-orange-50 transition ${value === city.key ? 'bg-orange-50 text-orange-500 font-bold' : 'text-[#666]'}`}>
+                                        {city.name}
+                                    </div>
+                                )) : <div className="p-4 text-center text-xs text-[#AAA]">검색 결과가 없어요 🥲</div>}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
         }
 
         // 앱 렌더링
