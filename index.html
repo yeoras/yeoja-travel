@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YEOJA - 여행자 견적 자동화 시스템</title>
+    
+    <!-- 1. 테일윈드 CSS (디자인) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 2. 리액트 & 바벨 (실행 엔진) -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- 3. 폰트어썸 아이콘 (가장 안정적인 아이콘 라이브러리) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- 4. 폰트 (Jua체) -->
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+
+    <style>
+        * { font-family: 'Jua', sans-serif; }
+        .soft-shadow { box-shadow: 0 8px 24px rgba(149, 157, 165, 0.1); }
+        .btn-press:active { transform: scale(0.98); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .animate-pop { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .input-base { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #EEE; background-color: #FAFAFA; font-size: 14px; outline: none; transition: all 0.2s; }
+        .input-base:focus { border-color: #FB923C; background-color: #FFF; }
+        
+        /* 아이콘 래퍼 스타일 */
+        .icon-wrapper { display: inline-flex; align-items: center; justify-content: center; }
+    </style>
+</head>
+<body class="bg-[#F9F5F0]">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // =========================================================================
+        // 🛠️ [아이콘 복구 키트] 오류 방지를 위해 아이콘을 직접 만들었습니다!
+        // =========================================================================
+        const Icon = ({ name, className }) => <i className={`fa-solid ${name} ${className} icon-wrapper`}></i>;
+
+        const Plane = (p) => <Icon name="fa-plane" {...p} />;
+        const Hotel = (p) => <Icon name="fa-hotel" {...p} />;
+        const MapIcon = (p) => <Icon name="fa-map-location-dot" {...p} />;
+        const Coffee = (p) => <Icon name="fa-mug-hot" {...p} />;
+        const Calculator = (p) => <Icon name="fa-calculator" {...p} />;
+        const Search = (p) => <Icon name="fa-magnifying-glass" {...p} />;
+        const User = (p) => <Icon name="fa-user" {...p} />;
+        const Heart = (p) => <Icon name="fa-heart" {...p} />;
+        const Users = (p) => <Icon name="fa-users" {...p} />;
+        const Briefcase = (p) => <Icon name="fa-briefcase" {...p} />;
+        const ChevronRight = (p) => <Icon name="fa-chevron-right" {...p} />;
+        const ArrowLeft = (p) => <Icon name="fa-arrow-left" {...p} />;
+        const RotateCcw = (p) => <Icon name="fa-rotate-left" {...p} />;
+        const Star = (p) => <Icon name="fa-star" {...p} />;
+        const Sparkles = (p) => <Icon name="fa-wand-magic-sparkles" {...p} />;
+        const Smile = (p) => <Icon name="fa-face-smile" {...p} />;
+        const Sun = (p) => <Icon name="fa-sun" {...p} />;
+        const MessageSquare = (p) => <Icon name="fa-comment" {...p} />;
+        const DollarSign = (p) => <Icon name="fa-dollar-sign" {...p} />;
+        const X = (p) => <Icon name="fa-xmark" {...p} />;
+        const Send = (p) => <Icon name="fa-paper-plane" {...p} />;
+        const Share2 = (p) => <Icon name="fa-share-nodes" {...p} />;
+        const Copy = (p) => <Icon name="fa-copy" {...p} />;
+        const LogIn = (p) => <Icon name="fa-right-to-bracket" {...p} />;
+        const CheckCircle = (p) => <Icon name="fa-circle-check" {...p} />;
+        const AlertCircle = (p) => <Icon name="fa-circle-exclamation" {...p} />;
+        const PlayCircle = (p) => <Icon name="fa-circle-play" {...p} />;
+        const Gift = (p) => <Icon name="fa-gift" {...p} />;
+
+        // =========================================================================
+        // 🚫 [클린봇] 금지어 리스트
+        // =========================================================================
+        const BANNED_WORDS = ['깡패', '바보', '멍청이', '시발', '병신', '개새끼', '지랄', '놈', '년', '죽어', '사기'];
+
+        // =========================================================================
+        // 📢 [사장님 전용 관리 공간] 
+        // =========================================================================
+        const WEEKLY_RANKING_DATA = {
+            family: [
+                { name: '나트랑 (베트남)', tag: '가족여행 성지' },
+                { name: '괌 (미국)', tag: '쇼핑+휴양 꿀조합' },
+                { name: '제주도 (한국)', tag: '봄꽃 여행 시즌' }
+            ],
+            couple: [
+                { name: '발리 (인도네시아)', tag: '신혼여행 1위' },
+                { name: '교토 (일본)', tag: '감성 골목길 데이트' },
+                { name: '파리 (프랑스)', tag: '낭만의 도시' }
+            ],
+            solo: [
+                { name: '치앙마이 (태국)', tag: '한달살기 성지' },
+                { name: '도쿄 (일본)', tag: '혼밥/덕질 최고' },
+                { name: '리스본 (포르투갈)', tag: '유럽 감성 낭낭' }
+            ]
+        };
+
+        const CITIES_DB = {
+            'bali': { name: '발리 (인도네시아)', flight: 650000, hostel: 15000, airbnb: 50000, hotel: 120000, food: 15000, coffee: 4000 },
+            'chiangmai': { name: '치앙마이 (태국)', flight: 450000, hostel: 12000, airbnb: 40000, hotel: 90000, food: 8000, coffee: 3000 },
+            'bangkok': { name: '방콕 (태국)', flight: 400000, hostel: 15000, airbnb: 45000, hotel: 100000, food: 10000, coffee: 3500 },
+            'danang': { name: '다낭 (베트남)', flight: 350000, hostel: 10000, airbnb: 45000, hotel: 100000, food: 7000, coffee: 2500 },
+            'nha_trang': { name: '나트랑 (베트남)', flight: 380000, hostel: 12000, airbnb: 50000, hotel: 110000, food: 8000, coffee: 3000 },
+            'cebu': { name: '세부 (필리핀)', flight: 350000, hostel: 15000, airbnb: 55000, hotel: 130000, food: 10000, coffee: 3500 },
+            'singapore': { name: '싱가포르', flight: 500000, hostel: 45000, airbnb: 120000, hotel: 200000, food: 30000, coffee: 6000 },
+            'tokyo': { name: '도쿄 (일본)', flight: 400000, hostel: 40000, airbnb: 100000, hotel: 150000, food: 25000, coffee: 5000 },
+            'osaka': { name: '오사카 (일본)', flight: 350000, hostel: 35000, airbnb: 90000, hotel: 130000, food: 22000, coffee: 4500 },
+            'fukuoka': { name: '후쿠오카 (일본)', flight: 250000, hostel: 30000, airbnb: 80000, hotel: 110000, food: 20000, coffee: 4000 },
+            'taipei': { name: '타이베이 (대만)', flight: 350000, hostel: 25000, airbnb: 70000, hotel: 120000, food: 15000, coffee: 4000 },
+            'jeju': { name: '제주도 (한국)', flight: 100000, hostel: 25000, airbnb: 80000, hotel: 150000, food: 20000, coffee: 5000 },
+            'paris': { name: '파리 (프랑스)', flight: 1200000, hostel: 60000, airbnb: 150000, hotel: 250000, food: 40000, coffee: 7000 },
+            'london': { name: '런던 (영국)', flight: 1300000, hostel: 70000, airbnb: 180000, hotel: 300000, food: 45000, coffee: 8000 },
+            'barcelona': { name: '바르셀로나 (스페인)', flight: 1100000, hostel: 50000, airbnb: 130000, hotel: 200000, food: 35000, coffee: 5000 },
+            'guam': { name: '괌 (미국)', flight: 500000, hostel: 60000, airbnb: 150000, hotel: 250000, food: 35000, coffee: 6000 },
+            'nyc': { name: '뉴욕 (미국)', flight: 1600000, hostel: 100000, airbnb: 250000, hotel: 400000, food: 50000, coffee: 9000 },
+        };
+
+        const TRAVEL_TYPES = {
+            'emotional': { title: '감성 충만 여행러 📸', desc: '남는 건 사진뿐! \n인생샷 건지는게 제일 중요해', icon: <Heart className="w-10 h-10 text-rose-400" /> },
+            'activity': { title: '에너자이저 액티비티러 🏄‍♂️', desc: '가만히 있으면 몸살 나! \n서핑, 등산, 다이빙 고고!', icon: <Sun className="w-10 h-10 text-amber-500" /> },
+            'healing': { title: '침대와 한몸 힐링러 🛌', desc: '관광지? 귀찮아... \n호캉스하며 멍때리는게 최고야', icon: <Coffee className="w-10 h-10 text-stone-500" /> },
+            'foodie': { title: '쩝쩝박사 먹방러 🍖', desc: '여행 = 먹는 것. \n맛집 지도부터 켜는 당신!', icon: <Users className="w-10 h-10 text-orange-400" /> },
+        };
+
+        function App() {
+            const [currentPage, setCurrentPage] = useState('home');
+            const [userPoints, setUserPoints] = useState(() => {
+                const saved = localStorage.getItem('yeoja_points');
+                return saved ? parseInt(saved, 10) : 0;
+            });
+            const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+            const [isAdModalOpen, setIsAdModalOpen] = useState(false);
+            const [user, setUser] = useState(() => {
+                // 로그인 상태 유지
+                const sessionUser = sessionStorage.getItem('yeoja_current_user');
+                return sessionUser ? JSON.parse(sessionUser) : null;
+            });
+
+            useEffect(() => {
+                localStorage.setItem('yeoja_points', userPoints);
+            }, [userPoints]);
+
+            // 로그인 성공 시 처리
+            const handleLoginSuccess = (userData) => {
+                setUser(userData);
+                sessionStorage.setItem('yeoja_current_user', JSON.stringify(userData));
+                setIsLoginModalOpen(false);
+            };
+
+            const handleLogout = () => {
+                setUser(null);
+                sessionStorage.removeItem('yeoja_current_user');
+            };
+
+            return (
+                <div className="min-h-screen bg-[#F9F5F0] text-[#5A5A5A] font-sans flex flex-col items-center selection:bg-orange-200">
+                    {isLoginModalOpen && (
+                        <LoginModal 
+                            onClose={() => setIsLoginModalOpen(false)} 
+                            onLogin={handleLoginSuccess} 
+                        />
+                    )}
+
+                    {isAdModalOpen && (
+                        <AdModal 
+                            onClose={() => setIsAdModalOpen(false)}
+                            onReward={() => {
+                                setUserPoints(prev => prev + 300);
+                                setIsAdModalOpen(false);
+                            }}
+                        />
+                    )}
+
+                    <header className="w-full max-w-6xl px-6 py-6 flex justify-between items-center sticky top-0 bg-[#F9F5F0]/90 backdrop-blur-sm z-40">
+                        <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setCurrentPage('home')}>
+                            <div className="bg-orange-400 text-white p-2.5 rounded-2xl shadow-sm transform group-hover:rotate-12 transition duration-300">
+                                <Plane className="w-6 h-6" />
+                            </div>
+                            <h1 className="text-3xl text-[#4A4A4A] tracking-wider group-hover:text-orange-500 transition">YEOJA</h1>
+                        </div>
+                        
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-orange-200 shadow-sm">
+                                <div className="w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center text-white text-xs font-bold">$</div>
+                                <span className="text-orange-500 font-bold">{userPoints.toLocaleString()} P</span>
+                            </div>
+                            
+                            {user ? (
+                                <div className="hidden md:flex items-center gap-2 text-sm font-medium text-[#555] bg-white border border-[#E0E0E0] px-4 py-2 rounded-full shadow-sm">
+                                    <User className="w-4 h-4 text-orange-400" />
+                                    <span>{user.name}님</span>
+                                    <button onClick={handleLogout} className="text-xs text-[#AAA] ml-2 hover:text-red-400">(로그아웃)</button>
+                                </div>
+                            ) : (
+                                <div onClick={() => setIsLoginModalOpen(true)} className="hidden md:flex items-center gap-2 text-sm font-medium text-[#7A7A7A] bg-white border border-[#E0E0E0] px-5 py-2 rounded-full cursor-pointer hover:bg-orange-50 hover:border-orange-200 hover:text-orange-500 transition shadow-sm">
+                                    <LogIn className="w-4 h-4" />
+                                    로그인 | 회원가입
+                                </div>
+                            )}
+                        </div>
+                    </header>
+
+                    <main className="w-full max-w-6xl flex-1 flex flex-col md:flex-row gap-6 p-4">
+                        <aside className="w-full md:w-1/4 space-y-4">
+                            <RankingBox icon={<Smile className="w-5 h-5 text-orange-400" />} title="가족 여행 인기 TOP" data={WEEKLY_RANKING_DATA.family} />
+                            <RankingBox icon={<Heart className="w-5 h-5 text-rose-400" />} title="커플 여행 인기 TOP" data={WEEKLY_RANKING_DATA.couple} />
+                            <RankingBox icon={<Briefcase className="w-5 h-5 text-blue-400" />} title="나혼자 여행 TOP" data={WEEKLY_RANKING_DATA.solo} />
+                        </aside>
+
+                        <section className="flex-1 min-h-[600px] bg-white rounded-[24px] border border-[#F0E6D8] p-8 relative soft-shadow">
+                            {currentPage !== 'home' && (
+                                <button onClick={() => setCurrentPage('home')} className="absolute top-6 left-6 flex items-center text-[#999] hover:text-[#555] text-lg transition z-10 font-medium">
+                                    <ArrowLeft className="w-5 h-5 mr-1" /> 돌아가기
+                                </button>
+                            )}
+                            {currentPage === 'home' && <HomeMenu setPage={setCurrentPage} />}
+                            {currentPage === 'calc' && <CostCalculator />}
+                            {currentPage === 'budget' && <BudgetRecommender />}
+                            {currentPage === 'mbti' && <MbtiAnalyzer />}
+                            {currentPage === 'search' && <RealTimeSearch />}
+                        </section>
+
+                        <aside className="w-full md:w-1/4 flex flex-col gap-4 h-full">
+                            <div onClick={() => setIsAdModalOpen(true)} className="bg-gradient-to-r from-orange-400 to-pink-500 text-white p-4 rounded-2xl soft-shadow cursor-pointer hover:scale-105 transition btn-press flex items-center gap-3 relative overflow-hidden">
+                                <div className="bg-white/20 p-2 rounded-full"><PlayCircle className="w-6 h-6 text-white" /></div>
+                                <div><div className="font-bold text-lg">광고 보고 300P</div><div className="text-xs text-orange-100 flex items-center gap-1"><Gift className="w-3 h-3"/> 즉시 적립해드려요!</div></div>
+                                <div className="absolute -right-2 -bottom-2 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
+                            </div>
+                            <ReviewBoard userPoints={userPoints} setUserPoints={setUserPoints} user={user} openLogin={() => setIsLoginModalOpen(true)} />
+                        </aside>
+                    </main>
+                    
+                    <footer className="w-full text-center p-8 text-[#CCC] text-sm font-light">© 2025 YEOJA. Your Travel Mate.</footer>
+                </div>
+            );
+        }
+
+        // --- 서브 컴포넌트들 ---
+        function AdModal({ onClose, onReward }) {
+            const [timeLeft, setTimeLeft] = useState(3);
+            const [canClose, setCanClose] = useState(false);
+
+            useEffect(() => {
+                if (timeLeft > 0) {
+                    const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+                    return () => clearTimeout(timer);
+                } else {
+                    setCanClose(true);
+                }
+            }, [timeLeft]);
+
+            const handleReward = () => {
+                alert("🎉 광고 시청 완료!\n300 포인트가 적립되었습니다.");
+                onReward();
+            };
+
+            return (
+                <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white w-full max-w-sm rounded-[2rem] p-6 text-center relative animate-pop">
+                        {!canClose && <div className="absolute top-4 right-4 text-xs bg-gray-200 px-2 py-1 rounded text-gray-500">남은 시간: {timeLeft}초</div>}
+                        <div className="w-full h-48 bg-gray-900 rounded-xl mb-6 flex flex-col items-center justify-center text-white relative overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-indigo-600 opacity-50"></div>
+                            <PlayCircle className="w-12 h-12 mb-2 z-10" />
+                            <p className="z-10 font-bold">특가 항공권 광고 재생 중...</p>
+                            <div className="w-full bg-gray-700 h-1 absolute bottom-0 left-0"><div className="bg-orange-500 h-full transition-all duration-1000 ease-linear" style={{ width: `${(3 - timeLeft) * 33.3}%` }}></div></div>
+                        </div>
+                        <h3 className="text-xl font-bold text-[#444] mb-2">포인트를 적립 중입니다!</h3>
+                        {canClose ? <button onClick={handleReward} className="w-full bg-orange-500 text-white py-3 rounded-xl font-bold text-lg hover:bg-orange-600 transition shadow-md animate-bounce">💰 300P 받기 (닫기)</button> : <button disabled className="w-full bg-gray-200 text-gray-400 py-3 rounded-xl font-bold cursor-not-allowed">시청 중... ({timeLeft})</button>}
+                    </div>
+                </div>
+            );
+        }
+
+        function LoginModal({ onClose, onLogin }) {
+            const [view, setView] = useState('login');
+            const [loginForm, setLoginForm] = useState({ id: '', password: '' });
+            const [signupForm, setSignupForm] = useState({ name: '', gender: 'female', birth: '', phone: '', email: '', id: '', password: '' });
+            const [idCheckStatus, setIdCheckStatus] = useState('none');
+            const [nameError, setNameError] = useState('');
+
+            const getRegisteredUsers = () => { const users = localStorage.getItem('yeoja_users'); return users ? JSON.parse(users) : []; };
+            const containsBannedWords = (text) => BANNED_WORDS.some(word => text.includes(word));
+
+            const handleIdCheck = () => {
+                const { id } = signupForm;
+                if (!id) { alert('아이디를 입력해주세요.'); return; }
+                if (containsBannedWords(id)) { setIdCheckStatus('banned'); return; }
+                const registeredUsers = getRegisteredUsers();
+                const isDuplicate = registeredUsers.some(u => u.id === id) || ['admin', 'test'].includes(id);
+                setIdCheckStatus('checking');
+                setTimeout(() => { if (isDuplicate) setIdCheckStatus('duplicate'); else setIdCheckStatus('available'); }, 300);
+            };
+
+            const handleSignupSubmit = () => {
+                if (!signupForm.name || !signupForm.id || !signupForm.password || !signupForm.phone) { alert('모든 필수 항목을 입력해주세요.'); return; }
+                if (containsBannedWords(signupForm.name)) { setNameError('🚫 사용할 수 없는 이름(닉네임)입니다.'); return; } else { setNameError(''); }
+                if (idCheckStatus !== 'available') { alert('아이디 중복 확인을 해주세요.'); return; }
+                const registeredUsers = getRegisteredUsers();
+                registeredUsers.push({ ...signupForm });
+                localStorage.setItem('yeoja_users', JSON.stringify(registeredUsers));
+                alert('🎉 회원가입 성공! 이제 로그인해주세요.');
+                setView('login');
+            };
+
+            const handleLoginSubmit = () => {
+                if (!loginForm.id || !loginForm.password) { alert('아이디와 비밀번호를 입력해주세요.'); return; }
+                const registeredUsers = getRegisteredUsers();
+                const foundUser = registeredUsers.find(u => u.id === loginForm.id && u.password === loginForm.password);
+                if (foundUser) { onLogin({ name: foundUser.name, id: foundUser.id }); } else { alert('🚫 아이디 또는 비밀번호가 일치하지 않습니다.\n(회원가입을 먼저 해주세요!)'); }
+            };
+
+            return (
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white p-8 rounded-[2rem] w-full max-w-sm soft-shadow animate-pop relative max-h-[90vh] overflow-y-auto scrollbar-hide">
+                        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><X className="w-6 h-6" /></button>
+                        {view === 'login' ? (
+                            <div className="text-center">
+                                <h2 className="text-2xl text-[#444] mb-2 font-bold">로그인</h2>
+                                <p className="text-[#999] mb-8 text-sm">반가워요! 오늘도 떠나볼까요?</p>
+                                <div className="space-y-3">
+                                    <input type="text" placeholder="아이디" className="input-base" value={loginForm.id} onChange={(e) => setLoginForm({...loginForm, id: e.target.value})} />
+                                    <input type="password" placeholder="비밀번호" className="input-base" value={loginForm.password} onChange={(e) => setLoginForm({...loginForm, password: e.target.value})} />
+                                    <button onClick={handleLoginSubmit} className="w-full bg-orange-400 text-white py-4 rounded-xl text-lg hover:bg-orange-500 transition shadow-md btn-press mt-2 font-bold">로그인</button>
+                                </div>
+                                <div className="mt-8 pt-6 border-t border-[#F5F5F5]"><p className="text-xs text-[#AAA] mb-2">아직 계정이 없으신가요?</p><button onClick={() => setView('signup')} className="text-orange-500 font-bold hover:underline text-sm">3초 만에 회원가입 하러가기 👉</button></div>
+                            </div>
+                        ) : (
+                            <div>
+                                <div className="flex items-center gap-2 mb-6"><button onClick={() => setView('login')} className="p-1 hover:bg-gray-100 rounded-full"><ArrowLeft className="w-5 h-5 text-gray-500" /></button><h2 className="text-2xl text-[#444] font-bold">회원가입</h2></div>
+                                <div className="space-y-4">
+                                    <div><label className="block text-xs text-gray-500 mb-1 ml-1">이름 (닉네임)</label><input type="text" className="input-base" value={signupForm.name} onChange={(e) => { setSignupForm({...signupForm, name: e.target.value}); if(nameError) setNameError(''); }} />{nameError && <p className="text-red-500 text-xs mt-1 ml-1">{nameError}</p>}</div>
+                                    <div><label className="block text-xs text-gray-500 mb-1 ml-1">아이디</label><div className="flex gap-2"><input type="text" className="input-base flex-1" value={signupForm.id} onChange={(e) => { setSignupForm({...signupForm, id: e.target.value}); setIdCheckStatus('none'); }} /><button onClick={handleIdCheck} className="bg-gray-100 text-gray-600 px-4 rounded-xl text-xs font-bold hover:bg-gray-200 transition whitespace-nowrap">중복확인</button></div>{idCheckStatus === 'available' && <p className="text-green-500 text-xs mt-1 ml-1">사용 가능!</p>}{idCheckStatus === 'duplicate' && <p className="text-red-500 text-xs mt-1 ml-1">이미 있어요!</p>}</div>
+                                    <div><label className="block text-xs text-gray-500 mb-1 ml-1">비밀번호</label><input type="password" className="input-base" value={signupForm.password} onChange={(e) => setSignupForm({...signupForm, password: e.target.value})} /></div>
+                                    <div><label className="block text-xs text-gray-500 mb-1 ml-1">연락처</label><input type="tel" className="input-base" value={signupForm.phone} onChange={(e) => setSignupForm({...signupForm, phone: e.target.value})} /></div>
+                                    <button onClick={handleSignupSubmit} className="w-full bg-orange-400 text-white py-4 rounded-xl text-lg hover:bg-orange-500 transition shadow-md btn-press mt-4 font-bold">가입완료</button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // --- 기타 컴포넌트들 ---
+        function RankingBox({ icon, title, data }) {
+            return (
+                <div className="bg-white p-5 rounded-[20px] border border-[#F0E6D8] soft-shadow hover:border-orange-200 transition duration-300">
+                    <h3 className="text-md mb-4 flex items-center gap-2 text-[#555] font-medium border-b border-[#F5F5F5] pb-3">{icon} {title}</h3>
+                    <ol className="space-y-3">
+                        {data.map((item, idx) => (
+                            <li key={idx} className="flex justify-between items-center group cursor-pointer"><div className="flex items-center gap-3"><span className={`flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold text-white ${idx === 0 ? 'bg-orange-400' : 'bg-[#DDD]'}`}>{idx + 1}</span><span className="text-[#666] group-hover:text-orange-500 transition">{item.name}</span></div><span className="text-[10px] text-[#BBB] bg-[#F9F9F9] px-2 py-0.5 rounded-md">{item.tag}</span></li>
+                        ))}
+                    </ol>
+                </div>
+            );
+        }
+
+        function HomeMenu({ setPage }) {
+            const menus = [
+                { id: 'calc', title: '여행 견적 계산기', sub: '얼마나 필요할까?', icon: <Calculator className="w-7 h-7" /> },
+                { id: 'budget', title: '예산 맞춤 여행지', sub: '내 돈으로 어디까지?', icon: <Sparkles className="w-7 h-7" /> },
+                { id: 'mbti', title: '여행 성향 테스트', sub: '나랑 찰떡인 곳은?', icon: <User className="w-7 h-7" /> },
+                { id: 'search', title: '최저가 검색', sub: '특가 줍줍하기', icon: <Search className="w-7 h-7" /> },
+            ];
+            return <div className="flex flex-col gap-4 h-full justify-center px-6"><div className="text-center mb-6"><h2 className="text-2xl text-[#444] mb-2">어디로 떠나시나요? ✈️</h2><p className="text-[#999] font-light">필요한 기능을 선택해보세요</p></div><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{menus.map((menu) => (<button key={menu.id} onClick={() => setPage(menu.id)} className="bg-[#FAFAFA] p-6 rounded-[24px] border border-transparent hover:border-orange-200 hover:bg-orange-50/30 flex flex-col items-center justify-center gap-3 transition-all duration-300 group btn-press"><div className="bg-white p-4 rounded-2xl shadow-sm text-[#888] group-hover:text-orange-500 group-hover:scale-110 transition duration-300">{menu.icon}</div><div className="text-center"><h3 className="text-lg text-[#555] mb-1">{menu.title}</h3><p className="text-xs text-[#AAA]">{menu.sub}</p></div></button>))}</div></div>;
+        }
+
+        function CostCalculator() {
+            const [city, setCity] = useState('bali');
+            const [days, setDays] = useState(30);
+            const [style, setStyle] = useState(1);
+            const [accom, setAccom] = useState('hostel');
+            const [result, setResult] = useState(null);
+            
+            const calculate = () => {
+                const data = CITIES_DB[city];
+                const total = data.flight + (data[accom] * days) + ((data.food * 3 + data.coffee) * days * style) + 10000 * days;
+                setResult({ total, breakdown: { flight: data.flight, stay: data[accom] * days, food: (data.food * 3) * days * style, etc: 10000 * days } });
+            };
+
+            return (
+                <div className="max-w-md mx-auto mt-2">
+                    <h2 className="text-xl mb-6 text-center text-[#555]">🧮 여행 견적 계산기</h2>
+                    {!result ? (
+                        <div className="space-y-6 px-4">
+                            <div className="space-y-2"><label className="text-sm text-[#888]">떠날 도시</label><select className="w-full p-3 rounded-xl border border-[#EEE] bg-[#FAFAFA]" value={city} onChange={(e) => setCity(e.target.value)}>{Object.keys(CITIES_DB).map(key => <option key={key} value={key}>{CITIES_DB[key].name}</option>)}</select></div>
+                            <div className="space-y-2"><label className="text-sm text-[#888]">여행 기간 (일)</label><input type="number" className="w-full p-3 rounded-xl border border-[#EEE] bg-[#FAFAFA] text-center" value={days} onChange={(e) => setDays(Number(e.target.value))} /></div>
+                            <button onClick={calculate} className="w-full bg-[#444] text-white py-4 rounded-xl text-lg hover:bg-[#333] transition shadow-md btn-press mt-4">계산하기</button>
+                        </div>
+                    ) : (
+                        <div className="bg-[#FAFAFA] p-6 rounded-3xl border border-[#EEE] text-center">
+                            <h3 className="text-lg text-[#666]">{CITIES_DB[city].name} {days}일 살기</h3>
+                            <div className="text-3xl text-[#444] mt-2 font-bold">{result.total.toLocaleString()}원</div>
+                            <button onClick={() => setResult(null)} className="w-full mt-6 bg-white border border-[#DDD] text-[#666] py-3 rounded-xl hover:bg-[#F5F5F5] transition text-sm">다시 계산하기</button>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        function BudgetRecommender() {
+             const [budget, setBudget] = useState(2000000);
+             const recommendations = Object.keys(CITIES_DB).filter(key => (CITIES_DB[key].flight + CITIES_DB[key].airbnb * 7 + CITIES_DB[key].food * 14) <= budget);
+             return <div className="max-w-md mx-auto mt-4 px-4"><h2 className="text-xl mb-6 text-center text-[#555]">💰 예산 맞춤 추천</h2><div className="bg-[#FAFAFA] p-6 rounded-3xl border border-[#EEE] text-center mb-6"><div className="text-2xl text-orange-500 font-bold mb-4">{budget.toLocaleString()}원</div><input type="range" min="500000" max="5000000" step="100000" value={budget} onChange={(e) => setBudget(Number(e.target.value))} className="w-full accent-orange-400 h-2 bg-[#E0E0E0] rounded-lg appearance-none cursor-pointer" /></div><div className="space-y-3">{recommendations.map(key => <div key={key} className="flex justify-between p-4 bg-white border border-[#EEE] rounded-2xl"><span>{CITIES_DB[key].name}</span><span className="text-orange-500 font-bold">가능</span></div>)}</div></div>;
+        }
+
+        function MbtiAnalyzer() {
+            const [step, setStep] = useState(0); 
+            const [answers, setAnswers] = useState({});
+            const startTest = () => setStep(1);
+            const handleAnswer = (val) => { const next = { ...answers, [`q${step}`]: val }; setAnswers(next); if (step < 3) setStep(step + 1); else setStep(4); };
+            const getResult = () => { const { q1, q3 } = answers; if(q1 === 'A' && q3 === 'A') return 'emotional'; return 'foodie'; }; 
+            const handleShare = () => { navigator.clipboard.writeText("여행 세포 테스트 해보세요! https://yeoja.travel").then(() => alert("복사 완료!")); };
+
+            if(step === 0) return <div className="text-center py-10"><div className="text-5xl mb-6">🧠</div><button onClick={startTest} className="w-full bg-orange-400 text-white py-4 rounded-2xl text-lg font-bold">테스트 시작하기</button></div>;
+            if(step <= 3) return <div className="px-2"><div className="text-center mb-8"><span className="bg-orange-100 text-orange-500 px-4 py-1 rounded-full">Q{step}</span></div><div className="space-y-4"><button onClick={() => handleAnswer('A')} className="w-full p-5 bg-[#FAFAFA] border rounded-2xl text-left">A. 선택지 1</button><button onClick={() => handleAnswer('B')} className="w-full p-5 bg-[#FAFAFA] border rounded-2xl text-left">B. 선택지 2</button></div></div>;
+            return <div className="bg-white p-8 rounded-[30px] border border-[#EEE] text-center"><h2 className="text-2xl mb-4">{TRAVEL_TYPES[getResult()].title}</h2><p className="mb-8">{TRAVEL_TYPES[getResult()].desc}</p><button onClick={handleShare} className="w-full bg-orange-400 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2"><Share2 className="w-4 h-4" /> 공유하기</button><button onClick={() => setStep(0)} className="w-full mt-3 bg-gray-100 py-3 rounded-xl">다시하기</button></div>;
+        }
+
+        function RealTimeSearch() {
+            return <div className="max-w-md mx-auto mt-2 h-full px-4"><h2 className="text-xl mb-6 text-center text-[#555]">🔥 오늘의 특가</h2><div className="space-y-4"><div onClick={() => window.open('https://www.agoda.com', '_blank')} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200"><div><span className="text-sky-500 bg-sky-50 px-2 py-0.5 rounded text-xs">항공</span><div className="font-bold mt-1">인천 ↔ 후쿠오카</div></div><div className="font-bold text-lg">189,000원</div></div></div></div>;
+        }
+
+        function ReviewBoard({ userPoints, setUserPoints, user, openLogin }) {
+             const [reviews, setReviews] = useState(() => { const s = localStorage.getItem('yeoja_reviews'); return s ? JSON.parse(s) : [{id:1, user:'여행조아', content:'추천해요!', city:'발리'}]; });
+             const [text, setText] = useState('');
+             useEffect(() => localStorage.setItem('yeoja_reviews', JSON.stringify(reviews)), [reviews]);
+             const handleSubmit = (e) => { e.preventDefault(); if(!user) return openLogin(); if(!text) return; setReviews([{id:Date.now(), user:user.name, content:text, city:'여행중'}, ...reviews]); setText(''); setUserPoints(p => p+300); alert('300P 적립!'); };
+             return <div className="bg-white rounded-[24px] border border-[#F0E6D8] p-5 h-[500px] flex flex-col"><div className="mb-4 font-bold border-b pb-2">💬 노마드 톡</div><div className="flex-1 overflow-y-auto space-y-3 mb-4">{reviews.map(r => <div key={r.id} className="bg-[#FAFAFA] p-3 rounded-xl"><span className="font-bold text-xs">{r.user}</span><p className="text-sm">{r.content}</p></div>)}</div><form onSubmit={handleSubmit} className="relative"><input value={text} onChange={e=>setText(e.target.value)} className="w-full p-3 bg-[#FAFAFA] rounded-xl outline-none" placeholder={user?"리뷰작성":"로그인필요"} disabled={!user}/><button className="absolute right-3 top-3 text-orange-400"><Send className="w-4 h-4"/></button></form></div>;
+        }
+
+        // 앱 렌더링
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
