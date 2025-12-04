@@ -174,7 +174,6 @@
                 const saved = localStorage.getItem('yeoja_points');
                 return saved ? parseInt(saved, 10) : 0;
             });
-            // 🆕 로그인/회원가입 모달 상태를 통합 관리 (null | 'login' | 'signup')
             const [authView, setAuthView] = useState(null); 
             const [isAdModalOpen, setIsAdModalOpen] = useState(false);
             const [user, setUser] = useState(() => {
@@ -189,7 +188,7 @@
             const handleLoginSuccess = (userData) => {
                 setUser(userData);
                 sessionStorage.setItem('yeoja_current_user', JSON.stringify(userData));
-                setAuthView(null); // 모달 닫기
+                setAuthView(null);
             };
 
             const handleLogout = () => {
@@ -199,7 +198,6 @@
 
             return (
                 <div className="min-h-screen bg-[#F9F5F0] text-[#5A5A5A] font-sans flex flex-col items-center selection:bg-orange-200">
-                    {/* 모달에 현재 보고 싶은 화면(initialView) 전달 */}
                     {authView && (
                         <LoginModal 
                             initialView={authView}
@@ -227,7 +225,6 @@
                         </div>
                         
                         <div className="flex items-center gap-4">
-                            {/* 🆕 수정된 부분: 로그인을 했을 때만 포인트가 보입니다! */}
                             {user && (
                                 <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-orange-200 shadow-sm">
                                     <div className="w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center text-white text-xs font-bold">$</div>
@@ -242,21 +239,12 @@
                                     <button onClick={handleLogout} className="text-xs text-[#AAA] ml-2 hover:text-red-400">(로그아웃)</button>
                                 </div>
                             ) : (
-                                // 🆕 로그인 / 회원가입 버튼 분리
                                 <div className="flex gap-2">
-                                    <button 
-                                        onClick={() => setAuthView('login')}
-                                        className="hidden md:flex items-center gap-2 text-sm font-medium text-[#7A7A7A] bg-white border border-[#E0E0E0] px-4 py-2 rounded-full cursor-pointer hover:bg-orange-50 hover:border-orange-200 hover:text-orange-500 transition shadow-sm"
-                                    >
-                                        <LogIn className="w-4 h-4" />
-                                        로그인
+                                    <button onClick={() => setAuthView('login')} className="hidden md:flex items-center gap-2 text-sm font-medium text-[#7A7A7A] bg-white border border-[#E0E0E0] px-4 py-2 rounded-full cursor-pointer hover:bg-orange-50 hover:border-orange-200 hover:text-orange-500 transition shadow-sm">
+                                        <LogIn className="w-4 h-4" />로그인
                                     </button>
-                                    <button 
-                                        onClick={() => setAuthView('signup')}
-                                        className="hidden md:flex items-center gap-2 text-sm font-bold text-white bg-orange-400 border border-orange-400 px-4 py-2 rounded-full cursor-pointer hover:bg-orange-500 hover:scale-105 transition shadow-sm"
-                                    >
-                                        <UserPlus className="w-4 h-4" />
-                                        회원가입
+                                    <button onClick={() => setAuthView('signup')} className="hidden md:flex items-center gap-2 text-sm font-bold text-white bg-orange-400 border border-orange-400 px-4 py-2 rounded-full cursor-pointer hover:bg-orange-500 hover:scale-105 transition shadow-sm">
+                                        <UserPlus className="w-4 h-4" />회원가입
                                     </button>
                                 </div>
                             )}
@@ -284,9 +272,19 @@
                         </section>
 
                         <aside className="w-full md:w-1/4 flex flex-col gap-4 h-full">
-                            <div onClick={() => setIsAdModalOpen(true)} className="bg-gradient-to-r from-orange-400 to-pink-500 text-white p-4 rounded-2xl soft-shadow cursor-pointer hover:scale-105 transition btn-press flex items-center gap-3 relative overflow-hidden">
+                            <div 
+                                onClick={() => {
+                                    if (!user) {
+                                        alert("회원만 포인트를 적립할 수 있어요! 로그인 해주세요.");
+                                        setAuthView('login');
+                                        return;
+                                    }
+                                    setIsAdModalOpen(true);
+                                }}
+                                className="bg-gradient-to-r from-orange-400 to-pink-500 text-white p-4 rounded-2xl soft-shadow cursor-pointer hover:scale-105 transition btn-press flex items-center gap-3 relative overflow-hidden"
+                            >
                                 <div className="bg-white/20 p-2 rounded-full"><PlayCircle className="w-6 h-6 text-white" /></div>
-                                <div><div className="font-bold text-lg">광고 보고 300P</div><div className="text-xs text-orange-100 flex items-center gap-1"><Gift className="w-3 h-3"/> 즉시 적립해드려요!</div></div>
+                                <div><div className="font-bold text-lg">광고 보고 300P</div><div className="text-xs text-orange-100 flex items-center gap-1"><Gift className="w-3 h-3"/> 현금 페이백 적립!</div></div>
                                 <div className="absolute -right-2 -bottom-2 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
                             </div>
                             <ReviewBoard userPoints={userPoints} setUserPoints={setUserPoints} user={user} openLogin={() => setAuthView('login')} />
@@ -294,6 +292,82 @@
                     </main>
                     
                     <footer className="w-full text-center p-8 text-[#CCC] text-sm font-light">© 2025 YEOJA. Your Travel Mate.</footer>
+                </div>
+            );
+        }
+
+        // 🆕 검색 기능이 강화된 최저가 검색 컴포넌트
+        function RealTimeSearch() {
+            const AGODA_LINK = 'https://www.agoda.com/partners/partnersearch.aspx?cid=123456'; 
+            const [searchTerm, setSearchTerm] = useState('');
+            
+            // 검색 로직: CITIES_DB에서 검색어가 포함된 도시 찾기
+            const searchResults = useMemo(() => {
+                if (!searchTerm) return [];
+                return Object.values(CITIES_DB).filter(city => 
+                    city.name.includes(searchTerm)
+                );
+            }, [searchTerm]);
+
+            return (
+                <div className="max-w-md mx-auto mt-2 h-full px-4">
+                    <h2 className="text-xl mb-6 text-center text-[#555]">🔥 최저가 검색</h2>
+                    
+                    {/* 검색창 */}
+                    <div className="relative mb-6">
+                        <input 
+                            type="text" 
+                            placeholder="도시 이름을 검색해보세요 (예: 오사카)" 
+                            className="w-full p-4 pl-12 rounded-2xl border border-[#EEE] bg-white shadow-sm outline-none focus:border-orange-400 transition"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    </div>
+
+                    {/* 결과 목록 */}
+                    <div className="space-y-4 overflow-y-auto h-[400px] scrollbar-hide pb-10">
+                        {searchTerm ? (
+                            searchResults.length > 0 ? (
+                                searchResults.map((city, idx) => (
+                                    <div key={idx} onClick={() => window.open(AGODA_LINK, '_blank')} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200 transition group">
+                                        <div>
+                                            <span className="text-orange-500 bg-orange-50 px-2 py-0.5 rounded text-xs font-bold mb-1 inline-block">검색결과</span>
+                                            <div className="font-bold text-gray-700 text-lg group-hover:text-orange-500 transition">{city.name}</div>
+                                        </div>
+                                        <button className="bg-gray-100 text-gray-500 px-3 py-2 rounded-xl text-sm font-bold group-hover:bg-orange-500 group-hover:text-white transition">가격 확인 👉</button>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center text-gray-400 py-10">
+                                    <p className="mb-2 text-2xl">🥲</p>
+                                    검색 결과가 없어요.<br/>
+                                    <span className="text-xs">아고다에서 직접 찾아보시겠어요?</span>
+                                    <button onClick={() => window.open(AGODA_LINK, '_blank')} className="mt-4 bg-orange-400 text-white px-4 py-2 rounded-xl text-sm font-bold block mx-auto">아고다 바로가기</button>
+                                </div>
+                            )
+                        ) : (
+                            // 검색어 없을 때 기본 목록 (오늘의 추천 특가)
+                            <>
+                                <div className="flex items-center gap-2 mb-2 px-1">
+                                    <Sparkles className="w-4 h-4 text-yellow-500" />
+                                    <span className="text-sm font-bold text-gray-500">오늘의 추천 특가</span>
+                                </div>
+                                <div onClick={() => window.open(AGODA_LINK, '_blank')} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200 transition group">
+                                    <div><span className="text-sky-500 bg-sky-50 px-2 py-0.5 rounded text-xs font-bold">인기</span><div className="font-bold mt-1 group-hover:text-orange-500">인천 ↔ 후쿠오카</div></div>
+                                    <div className="font-bold text-lg text-[#333]">189,000원~</div>
+                                </div>
+                                <div onClick={() => window.open(AGODA_LINK, '_blank')} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200 transition group">
+                                    <div><span className="text-pink-500 bg-pink-50 px-2 py-0.5 rounded text-xs font-bold">특가</span><div className="font-bold mt-1 group-hover:text-orange-500">다낭 5성급 리조트</div></div>
+                                    <div className="font-bold text-lg text-[#333]">120,000원~</div>
+                                </div>
+                                 <div onClick={() => window.open(AGODA_LINK, '_blank')} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200 transition group">
+                                    <div><span className="text-green-500 bg-green-50 px-2 py-0.5 rounded text-xs font-bold">마감임박</span><div className="font-bold mt-1 group-hover:text-orange-500">방콕 자유여행</div></div>
+                                    <div className="font-bold text-lg text-[#333]">320,000원~</div>
+                                </div>
+                            </>
+                        )}
+                    </div>
                 </div>
             );
         }
@@ -312,7 +386,7 @@
             }, [timeLeft]);
 
             const handleReward = () => {
-                alert("🎉 광고 시청 완료!\n300 포인트가 적립되었습니다.");
+                alert("🎉 광고 시청 완료!\n300 포인트가 적립되었습니다.\n(나중에 현금으로 돌려받으세요!)");
                 onReward();
             };
 
@@ -487,18 +561,15 @@
                     <h2 className="text-xl mb-6 text-center text-[#555]">🧮 여행 견적 계산기</h2>
                     {!result ? (
                         <div className="space-y-6 px-4">
-                            <div className="space-y-2"><label className="text-sm text-[#888]">떠날 도시 (검색 가능!)</label><SearchableCitySelect value={city} onChange={setCity} /></div>
+                            <div className="space-y-2"><label className="text-sm text-[#888]">떠날 도시</label><select className="w-full p-3 rounded-xl border border-[#EEE] bg-[#FAFAFA]" value={city} onChange={(e) => setCity(e.target.value)}>{Object.keys(CITIES_DB).map(key => <option key={key} value={key}>{CITIES_DB[key].name}</option>)}</select></div>
                             <div className="space-y-2"><label className="text-sm text-[#888]">여행 기간 (일)</label><input type="number" className="w-full p-3 rounded-xl border border-[#EEE] bg-[#FAFAFA] text-center" value={days} onChange={(e) => setDays(Number(e.target.value))} /></div>
-                            <div className="space-y-2"><label className="text-sm text-[#888]">소비 스타일</label><div className="flex gap-2 p-1 bg-[#FAFAFA] rounded-xl border border-[#EEE]">{[ { l: '알뜰하게', v: 0.8 }, { l: '평범하게', v: 1 }, { l: '여유롭게', v: 1.5 } ].map((opt) => ( <button key={opt.l} onClick={() => setStyle(opt.v)} className={`flex-1 py-2 rounded-lg text-sm transition ${style === opt.v ? 'bg-white shadow-sm text-orange-500 font-medium' : 'text-[#AAA]'}`}>{opt.l}</button>))}</div></div>
-                            <div className="space-y-2"><label className="text-sm text-[#888]">숙소 유형</label><select className="w-full p-3 rounded-xl border border-[#EEE] bg-[#FAFAFA]" value={accom} onChange={(e) => setAccom(e.target.value)}><option value="hostel">게스트하우스 (저렴)</option><option value="airbnb">에어비앤비 (감성)</option><option value="hotel">호텔/리조트 (편안)</option></select></div>
                             <button onClick={calculate} className="w-full bg-[#444] text-white py-4 rounded-xl text-lg hover:bg-[#333] transition shadow-md btn-press mt-4">계산하기</button>
                         </div>
                     ) : (
                         <div className="bg-[#FAFAFA] p-6 rounded-3xl border border-[#EEE] text-center">
                             <h3 className="text-lg text-[#666]">{CITIES_DB[city].name} {days}일 살기</h3>
                             <div className="text-3xl text-[#444] mt-2 font-bold">{result.total.toLocaleString()}원</div>
-                            <div className="text-xs text-[#AAA] mb-4">예상 총 비용</div>
-                            <button onClick={() => setResult(null)} className="w-full mt-2 bg-white border border-[#DDD] text-[#666] py-3 rounded-xl hover:bg-[#F5F5F5] transition text-sm">다시 계산하기</button>
+                            <button onClick={() => setResult(null)} className="w-full mt-6 bg-white border border-[#DDD] text-[#666] py-3 rounded-xl hover:bg-[#F5F5F5] transition text-sm">다시 계산하기</button>
                         </div>
                     )}
                 </div>
@@ -530,18 +601,12 @@
             return <div className="bg-white p-8 rounded-[30px] border border-[#EEE] text-center"><h2 className="text-2xl mb-4">{TRAVEL_TYPES[getResult()].title}</h2><p className="mb-8">{TRAVEL_TYPES[getResult()].desc}</p><button onClick={handleShare} className="w-full bg-orange-400 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2"><Share2 className="w-4 h-4" /> 공유하기</button><button onClick={() => setStep(0)} className="w-full mt-3 bg-gray-100 py-3 rounded-xl">다시하기</button></div>;
         }
 
-        function RealTimeSearch() {
-            // 아고다 검색 링크 (여기에 사장님 CID 넣으시면 됩니다)
-            const AGODA_LINK = 'https://www.agoda.com/partners/partnersearch.aspx?cid=123456'; 
-            return <div className="max-w-md mx-auto mt-2 h-full px-4"><h2 className="text-xl mb-6 text-center text-[#555]">🔥 오늘의 특가</h2><div className="space-y-4"><div onClick={() => window.open(AGODA_LINK, '_blank')} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200"><div><span className="text-sky-500 bg-sky-50 px-2 py-0.5 rounded text-xs">항공</span><div className="font-bold mt-1">인천 ↔ 후쿠오카</div></div><div className="font-bold text-lg">189,000원</div></div></div></div>;
-        }
-
         function ReviewBoard({ userPoints, setUserPoints, user, openLogin }) {
              const [reviews, setReviews] = useState(() => { const s = localStorage.getItem('yeoja_reviews'); return s ? JSON.parse(s) : [{id:1, user:'여행조아', content:'추천해요!', city:'발리'}]; });
              const [text, setText] = useState('');
              useEffect(() => localStorage.setItem('yeoja_reviews', JSON.stringify(reviews)), [reviews]);
-             const handleSubmit = (e) => { e.preventDefault(); if(!user) return openLogin(); if(!text) return; setReviews([{id:Date.now(), user:user.name, content:text, city:'여행중'}, ...reviews]); setText(''); setUserPoints(p => p+300); alert('300P 적립!'); };
-             return <div className="bg-white rounded-[24px] border border-[#F0E6D8] p-5 h-[500px] flex flex-col"><div className="mb-4 font-bold border-b pb-2">💬 노마드 톡</div><div className="flex-1 overflow-y-auto space-y-3 mb-4">{reviews.map(r => <div key={r.id} className="bg-[#FAFAFA] p-3 rounded-xl"><span className="font-bold text-xs">{r.user}</span><p className="text-sm">{r.content}</p></div>)}</div><form onSubmit={handleSubmit} className="relative"><input value={text} onChange={e=>setText(e.target.value)} className="w-full p-3 bg-[#FAFAFA] rounded-xl outline-none" placeholder={user?"리뷰작성":"로그인필요"} disabled={!user}/><button className="absolute right-3 top-3 text-orange-400"><Send className="w-4 h-4"/></button></form></div>;
+             const handleSubmit = (e) => { e.preventDefault(); if(!user) return openLogin(); if(!text) return; setReviews([{id:Date.now(), user:user.name, content:text, city:'여행중'}, ...reviews]); setText(''); setUserPoints(p => p+300); alert('300P 적립! (페이백 포인트)'); };
+             return <div className="bg-white rounded-[24px] border border-[#F0E6D8] p-5 h-[500px] flex flex-col"><div className="mb-4 font-bold border-b pb-2">💬 노마드 톡</div><div className="text-xs text-gray-500 mb-2">리뷰 쓰고 <span className="text-orange-500 font-bold">포인트(페이백)</span> 받자!</div><div className="flex-1 overflow-y-auto space-y-3 mb-4">{reviews.map(r => <div key={r.id} className="bg-[#FAFAFA] p-3 rounded-xl"><span className="font-bold text-xs">{r.user}</span><p className="text-sm">{r.content}</p></div>)}</div><form onSubmit={handleSubmit} className="relative"><input value={text} onChange={e=>setText(e.target.value)} className="w-full p-3 bg-[#FAFAFA] rounded-xl outline-none" placeholder={user?"리뷰작성":"로그인필요"} disabled={!user}/><button className="absolute right-3 top-3 text-orange-400"><Send className="w-4 h-4"/></button></form></div>;
         }
 
         // 앱 렌더링
