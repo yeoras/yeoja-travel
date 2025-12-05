@@ -108,7 +108,7 @@
             6: { flight: 40000, hostel: 25000, airbnb: 80000, hotel: 150000, food: 15000, coffee: 4500 } 
         };
 
-        // 🆕 [실제 핫플 데이터]
+        // [실제 핫플 데이터]
         const CITY_SPECIFIC_DATA = {
             'chicago': {
                 hotels: [ { name: 'The Langham Chicago', type: 'hotel', priceLevel: 'high' }, { name: 'Palmer House Hilton', type: 'hotel', priceLevel: 'mid' }, { name: 'Freehand Chicago', type: 'hostel', priceLevel: 'low' } ],
@@ -199,10 +199,31 @@
                  hotels: [ { name: 'The Savoy', type: 'hotel', priceLevel: 'high' }, { name: 'The Ritz London', type: 'hotel', priceLevel: 'high' }, { name: 'The Hoxton Shoreditch', type: 'hotel', priceLevel: 'mid' }, { name: 'Wombat\'s City Hostel', type: 'hostel', priceLevel: 'low' } ],
                  places: [ { name: 'Monmouth Coffee', type: 'cafe', vibe: ['local'] }, { name: 'Dishoom', type: 'restaurant', vibe: ['hip'] }, { name: 'The Connaught Bar', type: 'bar', vibe: ['hip'] } ],
                  spots: ['British Museum', 'London Eye', 'Tower Bridge', 'Buckingham Palace']
+            },
+             'interlaken': {
+                hotels: [ { name: 'Victoria Jungfrau Grand Hotel', type: 'hotel', priceLevel: 'high' }, { name: 'Hotel Interlaken', type: 'hotel', priceLevel: 'mid' }, { name: 'Youth Hostel Interlaken', type: 'hostel', priceLevel: 'low' } ],
+                places: [ { name: 'Velo Cafe', type: 'cafe', vibe: ['cozy'] }, { name: 'Hooters', type: 'restaurant', vibe: ['pub'] }, { name: 'Barracuda', type: 'bar', vibe: ['hip'] } ],
+                spots: ['하더 쿨름', '브리엔츠 호수', '융프라우요흐']
+            },
+            'zurich': {
+                hotels: [ { name: 'The Dolder Grand', type: 'hotel', priceLevel: 'high' }, { name: '25hours Hotel Langstrasse', type: 'hotel', priceLevel: 'mid' }, { name: 'Oldtown Hostel Otter', type: 'hostel', priceLevel: 'low' } ],
+                places: [ { name: 'Café Odeon', type: 'cafe', vibe: ['classic'] }, { name: 'Zeughauskeller', type: 'restaurant', vibe: ['local'] }, { name: 'Widder Bar', type: 'bar', vibe: ['jazz'] } ],
+                spots: ['취리히 호수', '그로스뮌스터', '반호프거리']
+            },
+            'las_vegas': {
+                hotels: [ { name: 'The Bellagio', type: 'hotel', priceLevel: 'high' }, { name: 'The Venetian', type: 'hotel', priceLevel: 'high' }, { name: 'Paris Las Vegas', type: 'hotel', priceLevel: 'mid' }, { name: 'Sin City Hostel', type: 'hostel', priceLevel: 'low' } ],
+                places: [ { name: 'Urth Caffé', type: 'cafe', vibe: ['organic'] }, { name: 'Gordon Ramsay Hell\'s Kitchen', type: 'restaurant', vibe: ['famous'] }, { name: 'Skyfall Lounge', type: 'bar', vibe: ['view'] } ],
+                spots: ['벨라지오 분수', '더 스트립', '프리몬트 거리']
+            },
+            'kathmandu': {
+                hotels: [ { name: 'Baber Mahal Vilas', type: 'hotel', priceLevel: 'high' }, { name: 'Kathmandu Guest House', type: 'hotel', priceLevel: 'mid' }, { name: 'Alobar1000', type: 'hostel', priceLevel: 'low' } ],
+                places: [ { name: 'Himalayan Java Coffee', type: 'cafe', vibe: ['hip'] }, { name: 'OR2K', type: 'restaurant', vibe: ['hip', 'quiet'] }, { name: 'Purple Haze Rock Bar', type: 'bar', vibe: ['hip'] } ],
+                spots: ['스와얌부나트', '보다나트', '타멜 거리']
             }
         };
 
         const RAW_CITIES = [
+            // 🇰🇷 국내
             ['제주도 (한국)', 6], ['부산 (한국)', 6], ['서울 (한국)', 6], ['강릉 (한국)', 6], ['속초 (한국)', 6], 
             ['양양 (한국)', 6], ['경주 (한국)', 6], ['여수 (한국)', 6], ['전주 (한국)', 6], ['춘천 (한국)', 6],
             ['가평 (한국)', 6], ['통영 (한국)', 6], ['거제 (한국)', 6], ['포항 (한국)', 6], ['남해 (한국)', 6],
@@ -262,7 +283,7 @@
 
         // --- 컴포넌트 ---
         function RankingBox({ icon, title, data }) {
-            return <div className="bg-white p-5 rounded-[20px] border border-[#F0E6D8] soft-shadow"><h3 className="text-md mb-4 flex items-center gap-2 text-[#555] font-medium border-b border-[#F5F5F5] pb-3">{icon} {title}</h3><ol className="space-y-3">{data.map((item, idx) => (<li key={idx} className="flex justify-between items-center"><div className="flex items-center gap-3"><span className={`flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold text-white ${idx === 0 ? 'bg-orange-400' : 'bg-[#DDD]'}`}>{idx + 1}</span><span className="text-[#666]">{item.name}</span></div><span className="text-[10px] text-[#BBB] bg-[#F9F9F9] px-2 py-0.5 rounded-md">{item.tag}</span></li>))}</ol></div>;
+            return <div className="bg-white p-5 rounded-[20px] border border-[#F0E6D8] soft-shadow"><h3 className="text-md mb-4 flex items-center gap-2 text-[#555] font-medium border-b border-[#F5F5F5] pb-3">{icon} {title}</h3><ol className="space-y-3">{data && data.map((item, idx) => (<li key={idx} className="flex justify-between items-center"><div className="flex items-center gap-3"><span className={`flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold text-white ${idx === 0 ? 'bg-orange-400' : 'bg-[#DDD]'}`}>{idx + 1}</span><span className="text-[#666]">{item.name}</span></div><span className="text-[10px] text-[#BBB] bg-[#F9F9F9] px-2 py-0.5 rounded-md">{item.tag}</span></li>))}</ol></div>;
         }
 
         function HomeMenu({ setPage }) {
@@ -281,14 +302,14 @@
             return <div className="relative" ref={wrapperRef}><div onClick={() => setIsOpen(!isOpen)} className="w-full p-3 rounded-xl border border-[#EEE] bg-[#FAFAFA] flex justify-between items-center cursor-pointer"><span className="text-[#555]">{selected}</span><ChevronRight className="w-4 h-4 text-[#AAA]" /></div>{isOpen && <div className="absolute z-50 w-full mt-2 bg-white rounded-xl border border-[#F0E6D8] shadow-lg max-h-60 overflow-hidden flex flex-col"><div className="p-2 border-b"><input type="text" placeholder="도시 검색" className="w-full text-sm outline-none" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} autoFocus /></div><div className="overflow-y-auto flex-1">{filtered.map(c => <div key={c.key} onClick={() => { onChange(c.key); setIsOpen(false); }} className="p-3 text-sm hover:bg-orange-50 cursor-pointer">{c.name}</div>)}</div></div>}</div>;
         }
 
-        // 🆕 [견적 계산기 복구] - 입력 폼 스타일로 원상복구
+        // 🆕 [견적 계산기 복구] - 입력 폼 스타일로 완벽 복원
         function CostCalculator() {
             const [city, setCity] = useState('bali');
             const [days, setDays] = useState(30);
             const [style, setStyle] = useState(1);
             const [accom, setAccom] = useState('hostel');
             const [result, setResult] = useState(null);
-            const calculate = () => { const d = CITIES_DB[city]; const total = d.flight + (d[accom] * days) + (d.food * 3 + d.coffee) * days * style; setResult({ total }); };
+            const calculate = () => { const d = CITIES_DB[city]; const total = d.flight + (d[accom] * days) + (d.food * 3 + d.coffee) * days * style; setResult({ total, breakdown: { flight: d.flight, stay: d[accom] * days, food: d.food * 3 * days * style, etc: 10000 * days }, details: { stayUnit: d[accom], foodUnit: d.food * 3 + d.coffee, styleLabel: style === 0.8 ? '절약형' : style === 1.5 ? '플렉스' : '보통' } }); };
             
             return (
                 <div className="max-w-md mx-auto mt-2 px-4">
@@ -326,6 +347,28 @@
                             <h3 className="text-lg text-[#666] mb-2">{CITIES_DB[city].name} {days}일 살기</h3>
                             <div className="text-3xl text-[#444] mt-2 font-bold">{result.total.toLocaleString()}원</div>
                             <div className="text-xs text-[#AAA] mb-6">예상 총 비용</div>
+                            
+                            <div className="text-left space-y-3 bg-white p-4 rounded-2xl border border-[#EEE] text-sm text-[#666] mb-4">
+                                <div className="flex justify-between">
+                                    <span>🛫 항공/교통 (평균)</span>
+                                    <span className="font-bold">{result.breakdown.flight.toLocaleString()}원</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <span>🏠 숙박비</span>
+                                        <div className="text-[10px] text-[#AAA]">{result.details.stayUnit.toLocaleString()}원 × {days}박</div>
+                                    </div>
+                                    <span className="font-bold">{result.breakdown.stay.toLocaleString()}원</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <span>🍔 식비/커피 ({result.details.styleLabel})</span>
+                                        <div className="text-[10px] text-[#AAA]">하루 약 {(result.details.foodUnit * (style === 0.8 ? 0.8 : style === 1.5 ? 1.5 : 1)).toLocaleString()}원</div>
+                                    </div>
+                                    <span className="font-bold">{result.breakdown.food.toLocaleString()}원</span>
+                                </div>
+                            </div>
+
                             <button onClick={() => setResult(null)} className="w-full mt-2 bg-white border border-[#DDD] text-[#666] py-3 rounded-xl hover:bg-[#F5F5F5] transition text-sm">다시 계산하기</button>
                         </div>
                     )}
@@ -351,9 +394,12 @@
                  
                  if (data) {
                      hotels = data.hotels.map(h => ({ name: h.name, price: h.priceLevel === 'high' ? city.hotel * 1.5 : city.hostel }));
-                     // 🆕 places 배열에서 cafe, spot 등 분류하여 3개씩 채움
+                     // 🆕 카페 처리
                      if(data.places) {
                         cafes = data.places.filter(p => p.type === 'cafe').map(p => p.name);
+                     }
+                     if(data.cafes) {
+                         data.cafes.forEach(c => { if(!cafes.includes(c)) cafes.push(c); });
                      }
                      spots = data.spots || [];
                      
@@ -394,7 +440,7 @@
                  let results = [];
 
                  if (data && data.places) {
-                     results = data.places.filter(p => p.type === category && (!p.vibe || p.vibe.includes(vibe))).map(p => ({ name: p.name }));
+                     results = data.places.filter(p => p.type === category && (!p.vibe || p.vibe.includes(vibe))).map(p => ({ name: p.name, query: p.name }));
                  }
                  
                  if (results.length === 0) {
@@ -404,9 +450,17 @@
                      
                      const randomName1 = `${vibeNames[vibe][0]} ${catNames[category][0]} ${cityName}`;
                      const randomName2 = `${cityName} ${vibeNames[vibe][1]} ${catNames[category][1]}`;
-                     results = [{ name: randomName1 }, { name: randomName2 }];
+                     results = [{ name: randomName1, query: randomName1 }, { name: randomName2, query: randomName2 }];
                  }
                  setCustomResults(results);
+             };
+
+             const openGoogleSearch = (query) => {
+                 // 🆕 안전장치: query가 없을 경우 대비
+                 if (!query) return;
+                 const cityName = selectedCity.name.split(' (')[0];
+                 const searchQuery = query.includes(cityName) ? query : `${cityName} ${query}`;
+                 window.open(`https://www.google.com/maps/search/${encodeURIComponent(searchQuery)}`, '_blank');
              };
 
              return (
@@ -443,7 +497,7 @@
                                         <div className="flex gap-2">{[{id:'restaurant', label:'맛집'}, {id:'bar', label:'술집'}, {id:'cafe', label:'카페'}].map(t => <button key={t.id} onClick={() => setCustomFilters({...customFilters, category: t.id})} className={`flex-1 py-2 rounded-xl border text-sm ${customFilters.category === t.id ? 'bg-orange-50 border-orange-400 font-bold' : ''}`}>{t.label}</button>)}</div>
                                         <div className="grid grid-cols-2 gap-2">{[{id:'hip', label:'🔥 힙한'}, {id:'quiet', label:'🤫 조용한'}, {id:'view', label:'🌅 뷰맛집'}, {id:'local', label:'🤠 현지인'}].map(v => <button key={v.id} onClick={() => setCustomFilters({...customFilters, vibe: v.id})} className={`py-2 rounded-xl border text-sm ${customFilters.vibe === v.id ? 'bg-orange-50 border-orange-400 font-bold' : ''}`}>{v.label}</button>)}</div>
                                         <button onClick={handleCustomSearch} className="w-full bg-gray-800 text-white py-3 rounded-xl font-bold">추천 장소 찾기</button>
-                                        {customResults && <div className="mt-4 border-t pt-4 space-y-2"><p className="text-xs text-gray-400 mb-2">추천 장소 (클릭해서 지도 보기)</p>{customResults.map((r, i) => <div key={i} onClick={() => openMap(r.name, selectedCity)} className="bg-white border p-3 rounded-xl shadow-sm hover:border-orange-200 cursor-pointer flex justify-between"><span className="font-bold text-sm">{r.name}</span><MapPin className="w-4 h-4 text-gray-300 group-hover:text-orange-400" /></div>)}</div>}
+                                        {customResults && <div className="mt-4 border-t pt-4 space-y-2"><p className="text-xs text-gray-400 mb-2">추천 장소 (클릭해서 지도 보기)</p>{customResults.map((r, i) => <div key={i} onClick={() => openGoogleSearch(r.query)} className="bg-white border p-3 rounded-xl shadow-sm hover:border-orange-200 cursor-pointer flex justify-between"><span className="font-bold text-sm">{r.name}</span><MapPin className="w-4 h-4 text-gray-300 group-hover:text-orange-400" /></div>)}</div>}
                                     </div>
                                 )}
                                 <button onClick={() => { setSelectedCity(null); setActiveTab('basic'); setCustomResults(null); }} className="w-full mt-4 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition">닫기</button>
@@ -458,7 +512,7 @@
             );
         }
 
-        // 🆕 4. 복구된 성향 테스트 컴포넌트 (풀버전)
+        // 🆕 4. 복구된 성향 테스트 컴포넌트 (풀버전 - 문항 복구됨)
         function MbtiAnalyzer() {
             const [step, setStep] = useState(0); 
             const [answers, setAnswers] = useState({});
@@ -475,9 +529,10 @@
             };
             
             // 결과 데이터 가져오기 (데이터가 로드되었는지 확인)
-            const resultData = TRAVEL_TYPES[getResult()] || TRAVEL_TYPES['foodie'];
-            const bestMatch = TRAVEL_TYPES[resultData.best];
-            const worstMatch = TRAVEL_TYPES[resultData.worst];
+            // 🚨 수정: 테스트가 끝났을 때만(step 4) getResult()를 호출하도록 하여 에러 방지
+            const resultData = step === 4 ? (TRAVEL_TYPES[getResult()] || TRAVEL_TYPES['foodie']) : null;
+            const bestMatch = resultData ? TRAVEL_TYPES[resultData.best] : null;
+            const worstMatch = resultData ? TRAVEL_TYPES[resultData.worst] : null;
 
             const handleShare = () => { 
                 const shareText = `[나의 여행 세포 테스트]\n나는 "${resultData.title}" 유형이래!\n\n${resultData.desc}\n\n너도 한번 해봐! 👉 https://yeoja.travel`;
@@ -527,7 +582,7 @@
                 );
             }
             
-            if (step === 4) {
+            if (step === 4 && resultData) {
                 return (
                     <div className="animate-fade-in pb-10">
                         <div className={`bg-white p-6 rounded-[30px] shadow-lg border-4 ${resultData.borderColor} text-center mb-8 relative overflow-hidden`}>
@@ -593,56 +648,70 @@
             return null;
         }
 
-        // ... (나머지 컴포넌트들 RealTimeSearch, ReviewBoard, AdModal, LoginModal, MyPageModal, AdminDashboard, App은 기존과 동일) ...
-        // ... (코드 길이 관계로 중략하지만, 실제로는 아래에 이어 붙여야 합니다.) ...
-        // ... (위의 "RealTimeSearch", "ReviewBoard", "AdModal", "LoginModal", "MyPageModal", "AdminDashboard", "App" 컴포넌트 코드를 여기에 그대로 붙여넣으세요) ...
-
+        // 🆕 [최저가 검색 - 업데이트]
         function RealTimeSearch() {
-            const AGENCIES = {
-                'agoda': { name: '아고다', color: 'bg-blue-600', hover: 'hover:bg-blue-700' },
-                'skyscanner': { name: '스카이스캐너', color: 'bg-sky-500', hover: 'hover:bg-sky-600' },
-                'trip': { name: '트립닷컴', color: 'bg-blue-800', hover: 'hover:bg-blue-900' },
-                'myrealtrip': { name: '마이리얼트립', color: 'bg-indigo-500', hover: 'hover:bg-indigo-600' }
-            };
             const [searchTerm, setSearchTerm] = useState('');
-            const [selectedCityForAgency, setSelectedCityForAgency] = useState(null);
-            const searchResults = useMemo(() => { if (!searchTerm) return []; return Object.values(CITIES_DB).filter(city => city.name.includes(searchTerm)); }, [searchTerm]);
-            const handleAgencyClick = (agencyKey) => {
-                if (!selectedCityForAgency) return;
-                const query = selectedCityForAgency.name.split(' (')[0]; 
-                const cid = "123456"; 
-                let finalUrl = "";
-                if (agencyKey === 'agoda') finalUrl = `https://www.agoda.com/search?cid=${cid}&text=${encodeURIComponent(query)}`;
-                else if (agencyKey === 'skyscanner') finalUrl = `https://www.skyscanner.co.kr/transport/flights/icn?destination=${encodeURIComponent(query)}`; 
-                else if (agencyKey === 'trip') finalUrl = `https://kr.trip.com/hotels/list?cityname=${encodeURIComponent(query)}`;
-                else if (agencyKey === 'myrealtrip') finalUrl = `https://www.myrealtrip.com/search?q=${encodeURIComponent(query)}`;
-                window.open(finalUrl, '_blank');
+            const [results, setResults] = useState(null);
+
+            const handleSearch = () => {
+                if (!searchTerm) return;
+                // 🆕 가상 최저가 데이터 생성 (실제 API 연동 불가 환경이므로)
+                const airlinePrices = [
+                    { name: '대한항공', price: '약 450,000원', link: `https://www.koreanair.com/booking/schedule-flight` }, // 대한항공 메인
+                    { name: '스카이스캐너', price: '약 320,000원', link: `https://www.skyscanner.co.kr/transport/flights/icn/${searchTerm}` }, // 목적지 포함
+                    { name: '아고다 (항공)', price: '약 310,000원', link: `https://www.agoda.com/flights` },
+                    { name: '트립닷컴', price: '약 330,000원', link: `https://kr.trip.com/flights/flights-to-${searchTerm}` }
+                ];
+                setResults(airlinePrices);
+            };
+            
+            const openLink = (url) => {
+                window.open(url, '_blank');
             };
 
             return (
                 <div className="max-w-md mx-auto mt-2 h-full px-4 relative">
                     <h2 className="text-xl mb-6 text-center text-[#555]">🔥 최저가 검색</h2>
-                    {selectedCityForAgency && (
-                        <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
-                            <div className="absolute inset-0 bg-black/50 rounded-[24px]" onClick={() => setSelectedCityForAgency(null)}></div>
-                            <div className="bg-white w-full max-w-sm rounded-2xl p-6 relative z-10 shadow-xl animate-pop">
-                                <button onClick={() => setSelectedCityForAgency(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
-                                <h3 className="text-lg font-bold text-center text-gray-800 mb-1">{selectedCityForAgency.name}</h3><p className="text-xs text-center text-gray-500 mb-6">어디서 가격을 비교해볼까요?</p>
-                                <div className="space-y-3">{Object.entries(AGENCIES).map(([key, agency]) => (<button key={key} onClick={() => handleAgencyClick(key)} className={`w-full py-4 rounded-xl text-white font-bold shadow-md transition flex items-center justify-between px-6 ${agency.color} ${agency.hover}`}><span className="flex items-center gap-2"><Plane className="w-4 h-4" /> {agency.name}</span><ChevronRight className="w-5 h-5 opacity-70" /></button>))}</div>
-                            </div>
+                    <div className="relative mb-6">
+                        <input 
+                            type="text" 
+                            placeholder="도시 이름을 검색해보세요 (예: 시드니)" 
+                            className="w-full p-4 pl-12 rounded-2xl border border-[#EEE] bg-white shadow-sm outline-none focus:border-orange-400 transition" 
+                            value={searchTerm} 
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                        />
+                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                        <button onClick={handleSearch} className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-orange-500 text-white text-xs px-3 py-1.5 rounded-lg">검색</button>
+                    </div>
+
+                    {results ? (
+                        <div className="space-y-3 pb-10 animate-pop">
+                            <p className="text-sm font-bold text-gray-600 mb-2">✈️ '{searchTerm}' 항공권 검색 결과</p>
+                            {results.map((item, idx) => (
+                                <div key={idx} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center">
+                                    <div>
+                                        <div className="font-bold text-gray-800 text-lg">{item.name}</div>
+                                        <div className="text-sm text-orange-500 font-bold">{item.price}</div>
+                                    </div>
+                                    <button 
+                                        onClick={() => openLink(item.link)}
+                                        className="bg-gray-100 text-gray-500 px-4 py-2 rounded-xl text-sm font-bold hover:bg-orange-500 hover:text-white transition"
+                                    >
+                                        바로가기 👉
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="space-y-4 overflow-y-auto h-[400px] scrollbar-hide pb-10">
+                             <div className="flex items-center gap-2 mb-2 px-1"><Sparkles className="w-4 h-4 text-yellow-500" /><span className="text-sm font-bold text-gray-500">오늘의 추천 특가</span></div>
+                             {/* 기존 추천 특가 유지 */}
+                             <div onClick={() => openLink('https://www.skyscanner.co.kr/transport/flights/icn/fuk')} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200 transition group"><div><span className="text-sky-500 bg-sky-50 px-2 py-0.5 rounded text-xs font-bold">인기</span><div className="font-bold mt-1 group-hover:text-orange-500">인천 ↔ 후쿠오카</div></div><div className="font-bold text-lg text-[#333]">189,000원~</div></div>
+                             <div onClick={() => openLink('https://www.agoda.com/search?text=Danang')} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200 transition group"><div><span className="text-pink-500 bg-pink-50 px-2 py-0.5 rounded text-xs font-bold">특가</span><div className="font-bold mt-1 group-hover:text-orange-500">다낭 5성급 리조트</div></div><div className="font-bold text-lg text-[#333]">120,000원~</div></div>
+                             <div onClick={() => openLink('https://www.skyscanner.co.kr/transport/flights/icn/bkkt')} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200 transition group"><div><span className="text-green-500 bg-green-50 px-2 py-0.5 rounded text-xs font-bold">마감임박</span><div className="font-bold mt-1 group-hover:text-orange-500">방콕 자유여행</div></div><div className="font-bold text-lg text-[#333]">320,000원~</div></div>
                         </div>
                     )}
-                    <div className="relative mb-6"><input type="text" placeholder="도시 이름을 검색해보세요 (예: 오사카)" className="w-full p-4 pl-12 rounded-2xl border border-[#EEE] bg-white shadow-sm outline-none focus:border-orange-400 transition" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} /><Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" /></div>
-                    <div className="space-y-4 overflow-y-auto h-[400px] scrollbar-hide pb-10">
-                        {searchTerm ? (searchResults.length > 0 ? (searchResults.map((city, idx) => (<div key={idx} onClick={() => setSelectedCityForAgency(city)} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200 transition group"><div><span className="text-orange-500 bg-orange-50 px-2 py-0.5 rounded text-xs font-bold mb-1 inline-block">검색결과</span><div className="font-bold text-gray-700 text-lg group-hover:text-orange-500 transition">{city.name}</div></div><button className="bg-gray-100 text-gray-500 px-3 py-2 rounded-xl text-sm font-bold group-hover:bg-orange-500 group-hover:text-white transition">가격 확인 👉</button></div>))) : (<div className="text-center text-gray-400 py-10"><p className="mb-2 text-2xl">🥲</p>검색 결과가 없어요.<br/><span className="text-xs">직접 찾아보시겠어요?</span><button onClick={() => setSelectedCityForAgency({name: '직접 검색'})} className="mt-4 bg-orange-400 text-white px-4 py-2 rounded-xl text-sm font-bold block mx-auto">사이트 바로가기</button></div>)) : (
-                            <>
-                                <div className="flex items-center gap-2 mb-2 px-1"><Sparkles className="w-4 h-4 text-yellow-500" /><span className="text-sm font-bold text-gray-500">오늘의 추천 특가</span></div>
-                                <div onClick={() => setSelectedCityForAgency({name: '후쿠오카'})} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200 transition group"><div><span className="text-sky-500 bg-sky-50 px-2 py-0.5 rounded text-xs font-bold">인기</span><div className="font-bold mt-1 group-hover:text-orange-500">인천 ↔ 후쿠오카</div></div><div className="font-bold text-lg text-[#333]">189,000원~</div></div>
-                                <div onClick={() => setSelectedCityForAgency({name: '다낭'})} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200 transition group"><div><span className="text-pink-500 bg-pink-50 px-2 py-0.5 rounded text-xs font-bold">특가</span><div className="font-bold mt-1 group-hover:text-orange-500">다낭 5성급 리조트</div></div><div className="font-bold text-lg text-[#333]">120,000원~</div></div>
-                                <div onClick={() => setSelectedCityForAgency({name: '방콕'})} className="bg-white p-5 rounded-2xl border border-[#EEE] shadow-sm flex justify-between items-center cursor-pointer hover:border-orange-200 transition group"><div><span className="text-green-500 bg-green-50 px-2 py-0.5 rounded text-xs font-bold">마감임박</span><div className="font-bold mt-1 group-hover:text-orange-500">방콕 자유여행</div></div><div className="font-bold text-lg text-[#333]">320,000원~</div></div>
-                            </>
-                        )}
-                    </div>
                 </div>
             );
         }
